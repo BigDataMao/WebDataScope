@@ -85,6 +85,18 @@
             "js": [
                 "src/content/platform/common/alphaDetailsPopup.js"
             ]
+        },
+        {
+            "matches": [
+                "https://support.worldquantbrain.com/hc/*/community/posts/*"
+            ],
+            "js": [
+                "src/content/support/communityAssistant.js"
+            ],
+            "css": [
+                "src/content/support/communityAssistant.css"
+            ],
+            "run_at": "document_idle"
         }
     ],
     "web_accessible_resources": [
@@ -106,6 +118,8 @@
         }
     ],
     "host_permissions": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
         "https://*/*",
         "https://api.worldquantbrain.com/*"
     ],
