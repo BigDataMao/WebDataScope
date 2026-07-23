@@ -99,7 +99,7 @@ async function fetchAllAlphas(forceRefresh = false, isSelf = false) { // Added i
     const dateRange = `dateSubmitted%3E${start}&dateSubmitted%3C${end}`;
 
     const limit = 30; // Data limit per page
-    const formatUrl = `https://api.worldquantbrain.com/users/self/alphas?limit={limit}&offset={offset}&status!=UNSUBMITTED%1FIS-FAIL&${dateRange}&order=-dateCreated&hidden=false`
+    const formatUrl = `https://api.worldquantbrain.com/users/self/alphas?limit={limit}&offset={offset}&status!=UNSUBMITTED%1FIS-FAIL&settings.language=FASTEXPR&${dateRange}&order=-dateCreated&hidden=false`
     let data = await getDataFromUrlWithOffsetParallel(formatUrl, limit, 'WQPOPSFetchButton')
 
     // Save to cache
