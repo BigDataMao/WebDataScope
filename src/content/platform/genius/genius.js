@@ -1282,6 +1282,10 @@ async function openDataOverview() {
     }
 }
 
+function openMeetingCalendar() {
+    window.open('https://wqcalendar.hualabtech.com/', '_blank', 'noopener,noreferrer');
+}
+
 
 // ############################## 插入按钮 ##############################
 
@@ -1336,6 +1340,7 @@ function insertButton() {
         buttonContainer.appendChild(ButtonGen('显示排名分析', 'WQPRankShowButton', insertMyRankInfo));
         buttonContainer.appendChild(ButtonGen('显示排名列表', 'WQPRankListShowButton', insertRankListInfo));
         buttonContainer.appendChild(ButtonGen('WQ Manager', 'WQPDataOverviewButton', openDataOverview));
+        buttonContainer.appendChild(ButtonGen('会议日历与回放', 'WQPMeetingCalendarButton', openMeetingCalendar));
 
         // Insert the button container after the target element
         targetElement.insertAdjacentElement('afterend', buttonContainer);

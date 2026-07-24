@@ -52,6 +52,7 @@ function writeLlmConfigToForm(config = {}) {
     hasSavedLlmApiKey = config.hasApiKey === true;
     apiKeyInput.value = hasSavedLlmApiKey ? '********' : '';
     apiKeyInput.placeholder = hasSavedLlmApiKey ? '留空则保留已保存 Key' : '请输入 API Key（如接口需要）';
+}
 
 function bindLlmApiKeyPlaceholder() {
     const apiKeyInput = document.getElementById(ids.llmApiKey);
