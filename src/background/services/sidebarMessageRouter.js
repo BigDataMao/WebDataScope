@@ -1,6 +1,7 @@
 ﻿import { getLocalValue, setLocalValue } from './storageService.js';
 import { getSettings, saveSettings } from './settingsService.js';
 import { runCommunityAction } from './supportCommunityService.js';
+import { generateAlphaDescriptionWithAi } from './alphaDescriptionService.js';
 import {
     clearProdMemoCache,
     deleteProdMemoCache,
@@ -67,6 +68,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
     if (msg.type === 'WQP_LLM_CONFIG_SAVE') {
         return respond(sendResponse, runCommunityAction('LLM_CONFIG_SAVE', { config: msg.config }));
+    }
+    if (msg.type === 'WQP_ALPHA_AI_GENERATE_DESCRIPTION') {
+        return respond(sendResponse, generateAlphaDescriptionWithAi({
+            alphaId: msg.alphaId,
+            alphaType: msg.alphaType,
+            expression: msg.expression,
+            settings: msg.settings,
+            fields: msg.fields,
+            existingDescription: msg.existingDescription,
+            selectionExpression: msg.selectionExpression,
+            comboExpression: msg.comboExpression,
+            existingSelectionDescription: msg.existingSelectionDescription,
+            existingComboDescription: msg.existingComboDescription,
+            selectedAlphaCount: msg.selectedAlphaCount,
+        }));
     }
     if (msg.type === 'WQP_COMMUNITY_AI_SUMMARIZE_POST') {
         return respond(sendResponse, runCommunityAction('AI_SUMMARIZE_POST', {
