@@ -85,6 +85,45 @@ function renderGuide() {
             fragment.appendChild(intro);
         }
 
+        if (guide.notice && typeof guide.notice === 'object') {
+            const notice = document.createElement('aside');
+            notice.className = 'guide-notice';
+            notice.setAttribute('role', 'note');
+
+            if (guide.notice.title) {
+                const noticeTitle = document.createElement('strong');
+                noticeTitle.className = 'guide-notice-title';
+                noticeTitle.textContent = String(guide.notice.title);
+                notice.appendChild(noticeTitle);
+            }
+
+            if (guide.notice.text) {
+                const noticeText = document.createElement('p');
+                noticeText.className = 'guide-notice-text';
+                noticeText.textContent = String(guide.notice.text);
+                notice.appendChild(noticeText);
+            }
+
+            if (guide.notice.href) {
+                try {
+                    const noticeUrl = new URL(String(guide.notice.href));
+                    if (['http:', 'https:'].includes(noticeUrl.protocol)) {
+                        const noticeLink = document.createElement('a');
+                        noticeLink.className = 'guide-notice-link';
+                        noticeLink.href = noticeUrl.href;
+                        noticeLink.target = '_blank';
+                        noticeLink.rel = 'noopener noreferrer';
+                        noticeLink.textContent = String(guide.notice.linkLabel || noticeUrl.href);
+                        notice.appendChild(noticeLink);
+                    }
+                } catch (error) {
+                    console.warn('[WQP] 使用指南提示链接无效：', error);
+                }
+            }
+
+            fragment.appendChild(notice);
+        }
+
         guide.sections.forEach((section, index) => {
             const details = document.createElement('details');
             details.className = 'guide-section';

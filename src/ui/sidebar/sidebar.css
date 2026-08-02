@@ -319,6 +319,38 @@ button.loading::before {
     font-size: 12px;
 }
 
+.guide-notice {
+    padding: 10px;
+    border: 1px solid #f1c56d;
+    border-left: 4px solid #d99718;
+    border-radius: 6px;
+    background: #fff9e8;
+    color: #6d4b08;
+    font-size: 12px;
+}
+
+.guide-notice-title {
+    display: block;
+    color: #5f4106;
+    font-size: 13px;
+}
+
+.guide-notice-text {
+    margin: 5px 0 7px;
+    line-height: 1.55;
+}
+
+.guide-notice-link {
+    color: #8a5500;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.guide-notice-link:hover {
+    color: #603b00;
+}
+
 .guide-section {
     overflow: hidden;
     border: 1px solid var(--line);
