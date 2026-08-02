@@ -13,6 +13,7 @@
     let markerByPost = {};
     let aiEnabled = false;
     let markerRefreshPromise = null;
+    let showUnreadOnly = false;
     let skipPosted = true;
     let customInstruction = '';
     let running = false;
@@ -159,12 +160,65 @@
     function selectedPosts() {
         const selectedIds = new Set(Array.from(document.querySelectorAll('.wqp-topic-ai-select-input:checked'))
             .map((input) => input.dataset.postId));
-        return posts.filter((post) => selectedIds.has(post.postId) && !(skipPosted && isPosted(post.postId)));
+        return posts.filter((post) => selectedIds.has(post.postId)
+            && !(skipPosted && isPosted(post.postId))
+            && !(showUnreadOnly && markerByPost[post.postId]?.readAt));
     }
 
     function updateSelectionCount() {
         const target = card?.querySelector('[data-role="selection-count"]');
-        if (target) target.textContent = `已选择 ${selectedPosts().length}/${posts.length} 个帖子`;
+        const availableCount = showUnreadOnly
+            ? posts.filter((post) => !markerByPost[post.postId]?.readAt).length
+            : posts.length;
+        if (target) target.textContent = `已选择 ${selectedPosts().length}/${availableCount} 个帖子`;
+    }
+
+    function ensureUnreadFilterButton() {
+        const followButton = document.querySelector(
+            'button[aria-label="Following Topic"],'
+            + 'button[aria-label="Follow Topic"],'
+            + 'button[aria-haspopup="true"][data-follower-count]',
+        );
+        if (!followButton?.parentElement) return null;
+
+        let button = document.getElementById('wqp-topic-unread-filter-button');
+        if (!button) {
+            button = document.createElement('button');
+            button.id = 'wqp-topic-unread-filter-button';
+            button.type = 'button';
+            button.dataset.action = 'toggle-unread-filter';
+            button.setAttribute('aria-controls', 'main-content');
+        }
+        if (button.previousElementSibling !== followButton) {
+            followButton.parentElement.insertBefore(button, followButton.nextSibling);
+        }
+        return button;
+    }
+
+    function applyUnreadFilter() {
+        let unreadCount = 0;
+        posts.forEach((post) => {
+            const read = Boolean(markerByPost[post.postId]?.readAt);
+            if (!read) unreadCount += 1;
+            const item = post.row?.closest('section[role="region"]') || post.row;
+            const filtered = showUnreadOnly && read;
+            item?.classList?.toggle('wqp-topic-read-filtered', filtered);
+            if (filtered) {
+                const input = post.row?.querySelector(`.wqp-topic-ai-select-input[data-post-id="${post.postId}"]`);
+                if (input) input.checked = false;
+            }
+        });
+
+        const button = ensureUnreadFilterButton();
+        if (button) {
+            button.classList.toggle('is-active', showUnreadOnly);
+            button.setAttribute('aria-pressed', String(showUnreadOnly));
+            button.textContent = showUnreadOnly ? '显示本页面全部帖子' : '只显示本页面未阅读帖子';
+            button.title = showUnreadOnly
+                ? `当前仅显示 ${unreadCount} 个未阅读帖子；点击恢复本页全部 ${posts.length} 个帖子`
+                : `本页面共有 ${unreadCount} 个未阅读帖子`;
+        }
+        updateSelectionCount();
     }
 
     function decoratePosts() {
@@ -252,7 +306,7 @@
                 marker.hidden = !posted;
             }
         });
-        updateSelectionCount();
+        applyUnreadFilter();
     }
 
     async function refreshPostMarkers() {
@@ -542,7 +596,9 @@
 
     function setAllSelected(checked) {
         document.querySelectorAll('.wqp-topic-ai-select-input').forEach((input) => {
-            if (!input.disabled) input.checked = checked;
+            const filtered = showUnreadOnly && markerByPost[input.dataset.postId]?.readAt;
+            if (filtered) input.checked = false;
+            else if (!input.disabled) input.checked = checked;
         });
         updateSelectionCount();
     }
@@ -579,6 +635,14 @@
     }
 
     function handlePageClick(event) {
+        const unreadFilterButton = event.target?.closest?.('#wqp-topic-unread-filter-button');
+        if (unreadFilterButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            showUnreadOnly = !showUnreadOnly;
+            applyUnreadFilter();
+            return;
+        }
         const favoriteButton = event.target?.closest?.('.wqp-topic-favorite-button');
         if (!favoriteButton) return;
         event.preventDefault();

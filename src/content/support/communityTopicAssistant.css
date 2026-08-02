@@ -224,6 +224,39 @@
     font-weight: 600;
 }
 
+#wqp-topic-unread-filter-button {
+    min-height: 34px;
+    margin-left: 8px;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+    font: 600 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 7px 11px;
+    vertical-align: middle;
+}
+
+#wqp-topic-unread-filter-button:hover {
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+
+#wqp-topic-unread-filter-button.is-active {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+#wqp-topic-unread-filter-button:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+#main-content.posts-list > section.wqp-topic-read-filtered {
+    display: none !important;
+}
+
 .posts-list .striped-list-item > .wqp-topic-marker-rail {
     display: grid;
     flex: 0 0 76px;
