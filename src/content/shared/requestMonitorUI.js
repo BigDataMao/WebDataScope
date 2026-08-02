@@ -23,7 +23,7 @@
     'z-index: 2147483647',
     'right: 12px',
     'bottom: 12px',
-    'width: 420px',
+    'width: min(420px, calc(100vw - 24px))',
     'max-height: 50vh',
     'background: rgba(17, 24, 39, 0.92)',
     'color: #E5E7EB',
@@ -35,7 +35,7 @@
   ].join(';');
 
   container.innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(31,41,55,0.95);border-bottom:1px solid rgba(255,255,255,0.08)">
+    <div id="wqs-req-drag-handle" title="拖动 API 请求监视器" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(31,41,55,0.95);border-bottom:1px solid rgba(255,255,255,0.08);cursor:move;touch-action:none;user-select:none">
       <strong style="font-size:12px;color:#F3F4F6;">API 请求监视器 · api.worldquantbrain.com</strong>
       <span id="wqs-req-count" style="margin-left:auto;background:#374151;color:#E5E7EB;padding:2px 6px;border-radius:10px;">0</span>
       <button id="wqs-req-collapse" title="折叠/展开" style="background:#4B5563;color:#F9FAFB;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;">折叠</button>
@@ -62,11 +62,69 @@
   const countTag = container.querySelector('#wqs-req-count');
   const btnClear = container.querySelector('#wqs-req-clear');
   const btnCollapse = container.querySelector('#wqs-req-collapse');
+  const dragHandle = container.querySelector('#wqs-req-drag-handle');
   const listWrap = container.querySelector('#wqs-req-list');
 
   let collapsed = false;
   let records = [];
   let EXCLUDED_PREFIXES = [];
+  let dragState = null;
+
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  function constrainToViewport() {
+    const rect = container.getBoundingClientRect();
+    const maxLeft = Math.max(8, window.innerWidth - rect.width - 8);
+    const maxTop = Math.max(8, window.innerHeight - rect.height - 8);
+    container.style.left = `${clamp(rect.left, 8, maxLeft)}px`;
+    container.style.top = `${clamp(rect.top, 8, maxTop)}px`;
+    container.style.right = 'auto';
+    container.style.bottom = 'auto';
+  }
+
+  dragHandle.addEventListener('pointerdown', (event) => {
+    if (event.isPrimary === false) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (event.target?.closest?.('button, input, textarea, select, a')) return;
+
+    const rect = container.getBoundingClientRect();
+    dragState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+    dragHandle.setPointerCapture?.(event.pointerId);
+    dragHandle.style.cursor = 'grabbing';
+    event.preventDefault();
+  });
+
+  dragHandle.addEventListener('pointermove', (event) => {
+    if (!dragState || event.pointerId !== dragState.pointerId) return;
+    const maxLeft = Math.max(8, window.innerWidth - dragState.width - 8);
+    const maxTop = Math.max(8, window.innerHeight - dragState.height - 8);
+    container.style.left = `${clamp(dragState.left + event.clientX - dragState.startX, 8, maxLeft)}px`;
+    container.style.top = `${clamp(dragState.top + event.clientY - dragState.startY, 8, maxTop)}px`;
+    container.style.right = 'auto';
+    container.style.bottom = 'auto';
+  });
+
+  function stopDragging(event) {
+    if (!dragState || (event?.pointerId != null && event.pointerId !== dragState.pointerId)) return;
+    const pointerId = dragState.pointerId;
+    dragState = null;
+    dragHandle.releasePointerCapture?.(pointerId);
+    dragHandle.style.cursor = 'move';
+  }
+
+  dragHandle.addEventListener('pointerup', stopDragging);
+  dragHandle.addEventListener('pointercancel', stopDragging);
+  window.addEventListener('resize', constrainToViewport);
 
   function formatTime(ts) {
     const d = new Date(ts);
@@ -111,6 +169,7 @@
     collapsed = !collapsed;
     listWrap.style.display = collapsed ? 'none' : 'block';
     btnCollapse.textContent = collapsed ? '展开' : '折叠';
+    constrainToViewport();
   });
 
   function isExcluded(url) {
