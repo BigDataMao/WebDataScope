@@ -1,4 +1,17 @@
 ﻿import { getSettings, saveSettings } from './settingsService.js';
+import { generateAlphaDescriptionWithAi } from './alphaDescriptionService.js';
+import {
+    getCommunityPostMarkers,
+    markCommunityPostRead,
+    setCommunityPostFavorite,
+} from './communityPostMarkerService.js';
+import { getLlmConfig, saveLlmConfig } from './llmService.js';
+import {
+    clearProdMemoCache,
+    deleteProdMemoCache,
+    getProdMemoCache,
+    importProdMemoCache,
+} from './prodMemoService.js';
 import {
     clearSessionKeeperLogs,
     getSessionKeeperState,
@@ -7,21 +20,7 @@ import {
     saveSessionKeeperConfig,
     triggerAutoLogin,
 } from './sessionKeeperService.js';
-
-function runCommunityAction(action, payload, ctx) {
-    return import('./supportCommunityService.js')
-        .then((service) => service.runCommunityAction(action, payload, ctx));
-}
-
-function runProdMemo(method, ...args) {
-    return import('./prodMemoService.js')
-        .then((service) => service[method](...args));
-}
-
-function runCommunityPostMarker(method, payload) {
-    return import('./communityPostMarkerService.js')
-        .then((service) => service[method](payload));
-}
+import { runCommunityAction } from './supportCommunityService.js';
 
 function respond(sendResponse, promise) {
     promise
@@ -58,25 +57,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return respond(sendResponse, handleCapturedSessionToken(msg.token));
     }
     if (msg.type === 'WQP_PRODMEMO_GET' || msg.type === 'WQP_PRODMEMO_EXPORT') {
-        return respond(sendResponse, runProdMemo('getProdMemoCache'));
+        return respond(sendResponse, getProdMemoCache());
     }
     if (msg.type === 'WQP_PRODMEMO_IMPORT') {
-        return respond(sendResponse, runProdMemo('importProdMemoCache', msg.memoData));
+        return respond(sendResponse, importProdMemoCache(msg.memoData));
     }
     if (msg.type === 'WQP_PRODMEMO_CLEAR') {
-        return respond(sendResponse, runProdMemo('clearProdMemoCache'));
+        return respond(sendResponse, clearProdMemoCache());
     }
     if (msg.type === 'WQP_PRODMEMO_DELETE') {
-        return respond(sendResponse, runProdMemo('deleteProdMemoCache', msg.alphaId));
+        return respond(sendResponse, deleteProdMemoCache(msg.alphaId));
     }
     if (msg.type === 'WQP_LLM_CONFIG_GET') {
-        return respond(sendResponse, import('./llmService.js').then((service) => service.getLlmConfig()));
+        return respond(sendResponse, getLlmConfig());
     }
     if (msg.type === 'WQP_LLM_CONFIG_SAVE') {
-        return respond(sendResponse, import('./llmService.js').then((service) => service.saveLlmConfig(msg.config)));
+        return respond(sendResponse, saveLlmConfig(msg.config));
     }
     if (msg.type === 'WQP_ALPHA_AI_GENERATE_DESCRIPTION') {
-        return respond(sendResponse, import('./alphaDescriptionService.js').then((service) => service.generateAlphaDescriptionWithAi({
+        return respond(sendResponse, generateAlphaDescriptionWithAi({
             alphaId: msg.alphaId,
             alphaType: msg.alphaType,
             expression: msg.expression,
@@ -88,7 +87,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             existingSelectionDescription: msg.existingSelectionDescription,
             existingComboDescription: msg.existingComboDescription,
             selectedAlphaCount: msg.selectedAlphaCount,
-        })));
+        }));
     }
     if (msg.type === 'WQP_COMMUNITY_AI_SUMMARIZE_POST') {
         return respond(sendResponse, runCommunityAction('AI_SUMMARIZE_POST', {
@@ -124,19 +123,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }));
     }
     if (msg.type === 'WQP_COMMUNITY_POST_MARKERS_GET') {
-        return respond(sendResponse, runCommunityPostMarker('getCommunityPostMarkers', {
+        return respond(sendResponse, getCommunityPostMarkers({
             postIds: msg.postIds,
         }));
     }
     if (msg.type === 'WQP_COMMUNITY_POST_MARK_READ') {
-        return respond(sendResponse, runCommunityPostMarker('markCommunityPostRead', {
+        return respond(sendResponse, markCommunityPostRead({
             postId: msg.postId,
             postUrl: msg.postUrl,
             title: msg.title,
         }));
     }
     if (msg.type === 'WQP_COMMUNITY_POST_FAVORITE_SET') {
-        return respond(sendResponse, runCommunityPostMarker('setCommunityPostFavorite', {
+        return respond(sendResponse, setCommunityPostFavorite({
             postId: msg.postId,
             postUrl: msg.postUrl,
             title: msg.title,
