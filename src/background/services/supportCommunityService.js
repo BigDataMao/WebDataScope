@@ -5,6 +5,9 @@ import { getLlmConfig, runLlmText, saveLlmConfig } from './llmService.js';
 const API_BASE = 'https://api.worldquantbrain.com';
 const SUPPORT_BASE = 'https://support.worldquantbrain.com';
 const LIKED_IDS_KEY = 'WQP_LikedIds';
+const COMMUNITY_STATE_KEY = 'WQP_CommunityState';
+const COMMUNITY_AI_STATUS_INDEX_KEY = 'WQP_CommunityAiPostStatuses';
+const COMMUNITY_AI_STATUS_INDEX_VERSION = 1;
 const DEFAULT_MAX_PAGES = 0; // 0 means no page cap, matching voteup.js recursion.
 const TEXT_REQUEST_MAX_RETRIES = 3;
 const MENTION_LOOKUP_MAX_RETRIES = 10;
@@ -22,6 +25,7 @@ const AI_SUMMARY_PROMPT_VERSION = 'markdown-summary-v1';
 let csrfToken = null;
 let supportReadyPromise = null;
 let communityStateSaveQueue = Promise.resolve();
+let communityAiStatusSaveQueue = Promise.resolve();
 let zendeskRequestQueue = Promise.resolve();
 let lastZendeskRequestAt = 0;
 
@@ -977,7 +981,7 @@ async function runWithConcurrency(tasks, limit) {
 }
 
 async function getCommunityState() {
-    const state = await getLocalValue('WQP_CommunityState');
+    const state = await getLocalValue(COMMUNITY_STATE_KEY);
     return state && typeof state === 'object' ? state : {};
 }
 
@@ -986,9 +990,88 @@ async function saveCommunityStatePatch(patch) {
         .catch(() => {})
         .then(async () => {
             const current = await getCommunityState();
-            await setLocalValue('WQP_CommunityState', { ...current, ...patch });
+            await setLocalValue(COMMUNITY_STATE_KEY, { ...current, ...patch });
         });
     communityStateSaveQueue = run;
+    return run;
+}
+
+function normalizeCommunityAiStatus(postId, entry = {}) {
+    const posted = entry.lastPostedComment && typeof entry.lastPostedComment === 'object'
+        ? entry.lastPostedComment
+        : null;
+    return {
+        postId,
+        hasSummary: typeof entry.hasSummary === 'boolean'
+            ? entry.hasSummary
+            : Boolean(entry.summary?.summaryMarkdown),
+        hasDraft: typeof entry.hasDraft === 'boolean'
+            ? entry.hasDraft
+            : Boolean(entry.draft?.draft?.commentMarkdown || entry.draft?.draft?.commentText),
+        lastPostedComment: posted ? {
+            postedAt: String(posted.postedAt || ''),
+            comment: {
+                id: String(posted.comment?.id || ''),
+                url: String(posted.comment?.url || ''),
+            },
+        } : null,
+    };
+}
+
+async function getCommunityAiStatusIndex() {
+    const cached = await getLocalValue(COMMUNITY_AI_STATUS_INDEX_KEY);
+    if (cached?.version === COMMUNITY_AI_STATUS_INDEX_VERSION
+        && cached.byPost && typeof cached.byPost === 'object') {
+        return cached;
+    }
+
+    const state = await getCommunityState();
+    const aiByPost = state.aiByPost && typeof state.aiByPost === 'object' ? state.aiByPost : {};
+    const byPost = {};
+    Object.entries(aiByPost).forEach(([postId, entry]) => {
+        const status = normalizeCommunityAiStatus(postId, entry);
+        if (status.hasSummary || status.hasDraft || status.lastPostedComment) byPost[postId] = status;
+    });
+    const index = {
+        version: COMMUNITY_AI_STATUS_INDEX_VERSION,
+        builtAt: new Date().toISOString(),
+        byPost,
+    };
+    await setLocalValue(COMMUNITY_AI_STATUS_INDEX_KEY, index);
+    return index;
+}
+
+function updateCommunityAiStatusIndex(postId, patch) {
+    const run = communityAiStatusSaveQueue
+        .catch(() => {})
+        .then(async () => {
+            const index = await getLocalValue(COMMUNITY_AI_STATUS_INDEX_KEY);
+            if (index?.version !== COMMUNITY_AI_STATUS_INDEX_VERSION
+                || !index.byPost || typeof index.byPost !== 'object') return;
+
+            const current = normalizeCommunityAiStatus(postId, index.byPost[postId]);
+            const next = normalizeCommunityAiStatus(postId, {
+                ...current,
+                ...(Object.prototype.hasOwnProperty.call(patch, 'summary')
+                    ? { hasSummary: Boolean(patch.summary?.summaryMarkdown) }
+                    : {}),
+                ...(Object.prototype.hasOwnProperty.call(patch, 'draft')
+                    ? { hasDraft: Boolean(patch.draft?.draft?.commentMarkdown || patch.draft?.draft?.commentText) }
+                    : {}),
+                ...(Object.prototype.hasOwnProperty.call(patch, 'lastPostedComment')
+                    ? { lastPostedComment: patch.lastPostedComment }
+                    : {}),
+            });
+            await setLocalValue(COMMUNITY_AI_STATUS_INDEX_KEY, {
+                ...index,
+                updatedAt: new Date().toISOString(),
+                byPost: {
+                    ...index.byPost,
+                    [postId]: next,
+                },
+            });
+        });
+    communityAiStatusSaveQueue = run;
     return run;
 }
 
@@ -1221,6 +1304,7 @@ async function saveCommunityAiPatch(postId, patch) {
         updatedAt: new Date().toISOString(),
     };
     await saveCommunityStatePatch({ aiByPost });
+    await updateCommunityAiStatusIndex(postId, patch);
 }
 
 export async function getCachedCommunityAiSummary(payload = {}) {
@@ -1250,27 +1334,11 @@ export async function getCommunityAiPostStatuses(payload = {}) {
         })
         .filter(Boolean)))
         .slice(0, 100);
-    const state = await getCommunityState();
-    const aiByPost = state.aiByPost && typeof state.aiByPost === 'object' ? state.aiByPost : {};
+    const index = await getCommunityAiStatusIndex();
     const byPost = {};
 
     postIds.forEach((postId) => {
-        const entry = aiByPost[postId] && typeof aiByPost[postId] === 'object'
-            ? aiByPost[postId]
-            : {};
-        const posted = entry.lastPostedComment;
-        byPost[postId] = {
-            postId,
-            hasSummary: Boolean(entry.summary?.summaryMarkdown),
-            hasDraft: Boolean(entry.draft?.draft?.commentMarkdown || entry.draft?.draft?.commentText),
-            lastPostedComment: posted ? {
-                postedAt: posted.postedAt || '',
-                comment: {
-                    id: posted.comment?.id || '',
-                    url: posted.comment?.url || '',
-                },
-            } : null,
-        };
+        byPost[postId] = normalizeCommunityAiStatus(postId, index.byPost[postId]);
     });
 
     return { byPost };

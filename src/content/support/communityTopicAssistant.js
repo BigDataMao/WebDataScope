@@ -13,6 +13,7 @@
     let markerByPost = {};
     let aiEnabled = false;
     let markerRefreshPromise = null;
+    let aiStatusRefreshPromise = null;
     let showUnreadOnly = false;
     let skipPosted = true;
     let customInstruction = '';
@@ -325,6 +326,22 @@
         return markerRefreshPromise;
     }
 
+    function refreshAiPostStatuses() {
+        if (!aiEnabled || !posts.length) return Promise.resolve();
+        if (aiStatusRefreshPromise) return aiStatusRefreshPromise;
+        aiStatusRefreshPromise = sendMessage('WQP_COMMUNITY_AI_GET_POST_STATUSES', {
+            postIds: posts.map((post) => post.postId),
+        }).then((data) => {
+            statusByPost = data?.byPost || {};
+            decoratePosts();
+        }).catch((error) => {
+            console.warn('[WQP Community] 无法读取 AI 评论状态：', error);
+        }).finally(() => {
+            aiStatusRefreshPromise = null;
+        });
+        return aiStatusRefreshPromise;
+    }
+
     async function toggleFavorite(postId) {
         const post = posts.find((item) => item.postId === postId);
         if (!post) return;
@@ -512,6 +529,10 @@
 
     async function runBatch(autoPublish) {
         if (running) return;
+        if (aiStatusRefreshPromise) {
+            setStatus('正在完成 AI 评论状态同步…', 'loading');
+            await aiStatusRefreshPromise;
+        }
         const queue = selectedPosts();
         if (!queue.length) {
             setStatus('请先在帖子列表中选择至少一个帖子。', 'error');
@@ -690,18 +711,12 @@
             if (aiEnabled) {
                 ensureCard();
                 setCollapsed(config.defaultCollapsed === true);
-                try {
-                    const statusData = await sendMessage('WQP_COMMUNITY_AI_GET_POST_STATUSES', {
-                        postIds: posts.map((post) => post.postId),
-                    });
-                    statusByPost = statusData?.byPost || {};
-                } catch (error) {
-                    console.warn('[WQP Community] 无法读取 AI 评论状态：', error);
-                }
             }
             decoratePosts();
             if (aiEnabled) renderReady();
             bindPageMarkerEvents();
+            // AI 状态来自可能很大的 Community 缓存，必须在首屏标记渲染后异步补充。
+            if (aiEnabled) refreshAiPostStatuses();
         } catch (error) {
             console.warn('[WQP Community] topics 页面助手初始化失败：', error);
         }

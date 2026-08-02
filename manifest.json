@@ -112,7 +112,7 @@
             "css": [
                 "src/content/support/communityTopicAssistant.css"
             ],
-            "run_at": "document_idle"
+            "run_at": "document_end"
         }
     ],
     "web_accessible_resources": [

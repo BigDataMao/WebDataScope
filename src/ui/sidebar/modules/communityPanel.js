@@ -12,6 +12,7 @@ const DEFAULT_PROGRESS_LABELS = {
 };
 
 const COMMUNITY_STATE_KEY = 'WQP_CommunityState';
+const COMMUNITY_AI_STATUS_INDEX_KEY = 'WQP_CommunityAiPostStatuses';
 const COMPRESSED_JSON_FORMAT_HEADER = 'WQCS_JSON_V1\n';
 const JSON_CHUNK_MAX_CHARS = 256 * 1024;
 const JSON_INDENT = '  ';
@@ -330,7 +331,10 @@ function getCommunityStateFromStorage() {
 
 function setCommunityStateToStorage(state) {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.set({ [COMMUNITY_STATE_KEY]: state }, () => {
+        chrome.storage.local.set({
+            [COMMUNITY_STATE_KEY]: state,
+            [COMMUNITY_AI_STATUS_INDEX_KEY]: null,
+        }, () => {
             if (chrome.runtime.lastError) {
                 reject(new Error(chrome.runtime.lastError.message));
                 return;
