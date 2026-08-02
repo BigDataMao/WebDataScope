@@ -301,6 +301,34 @@ button.loading::before {
     margin-top: 5px;
 }
 
+.acknowledgements-box {
+    margin-top: 16px;
+}
+
+.acknowledgements-title {
+    margin-top: 0;
+}
+
+.acknowledgements-list {
+    margin: 0;
+    padding: 10px 10px 10px 28px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel);
+    font-size: 12px;
+}
+
+.acknowledgements-list a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.acknowledgements-list a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 .guide-box {
     display: grid;
     gap: 10px;
@@ -402,6 +430,7 @@ button.loading::before {
 }
 
 .changelog-error,
+.acknowledgements-error,
 .guide-error {
     padding: 10px;
     border: 1px solid #f0b4ac;

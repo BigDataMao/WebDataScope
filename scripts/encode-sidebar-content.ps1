@@ -15,6 +15,11 @@ $targets = @(
         Source = 'guide.json'
         Output = 'guideData.js'
         ExportName = 'ENCODED_GUIDE'
+    },
+    @{
+        Source = 'acknowledgements.json'
+        Output = 'acknowledgementsData.js'
+        ExportName = 'ENCODED_ACKNOWLEDGEMENTS'
     }
 )
 

@@ -8,13 +8,17 @@ const telemetry = await readFile(new URL('../src/background/services/telemetrySe
 
 const changelog = await decodeModule('../src/ui/sidebar/modules/changelogData.js');
 const guide = await decodeModule('../src/ui/sidebar/modules/guideData.js');
+const acknowledgements = await decodeModule('../src/ui/sidebar/modules/acknowledgementsData.js');
 
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 assert.equal(manifest.update_url, undefined, 'Extension must not gain automatic updates without a new consent design.');
 assert.equal(changelog[0]?.version, manifest.version, 'Changelog first entry must match manifest version.');
+assert.ok(Array.isArray(acknowledgements.items), 'Acknowledgements must contain an items array.');
+assert.ok(acknowledgements.items[0]?.name, 'Acknowledgements first item must have a name.');
+assert.match(acknowledgements.items[0]?.href || '', /^https:\/\//);
 assert.match(guide.title || '', new RegExp(`v${escapeRegex(manifest.version)}`, 'i'));
-assert.match(releaseNotes, new RegExp(`WorldQuant Scope ${escapeRegex(manifest.version)}`));
-assert.match(releaseNotes, /重要数据登记说明/);
+assert.match(releaseNotes, new RegExp(`Release version ${escapeRegex(manifest.version)}`));
+assert.match(releaseNotes, /版本号遵循 x\.y\.z/);
 assert.match(background, /import \{ initTelemetryService \} from '\.\/services\/telemetryService\.js';/);
 assert.doesNotMatch(telemetry, /import\s*\(/, 'MV3 service worker must not use dynamic import().');
 assert.match(telemetry, /credentials:\s*'omit'/);

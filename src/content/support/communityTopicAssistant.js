@@ -122,8 +122,10 @@
     }
 
     function safeHttpUrl(value) {
+        const rawUrl = String(value || '').trim();
+        if (!rawUrl) return '';
         try {
-            const url = new URL(value, location.origin);
+            const url = new URL(rawUrl, location.origin);
             return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
         } catch (_) {
             return '';
@@ -514,7 +516,9 @@
         }
         host.innerHTML = items.map((result) => {
             const canPost = result.status === 'draftReady' && result.draftText;
-            const postedUrl = safeHttpUrl(result.postedComment?.comment?.url || '');
+            const postedUrl = result.status === 'posted'
+                ? safeHttpUrl(result.postedComment?.comment?.url)
+                : '';
             return `
                 <details class="wqp-topic-ai-result ${result.status === 'error' ? 'is-error' : ''}" ${result.status === 'error' ? 'open' : ''}>
                     <summary>

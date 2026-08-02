@@ -1,5 +1,6 @@
 import { ENCODED_CHANGELOG } from './changelogData.js';
 import { ENCODED_GUIDE } from './guideData.js';
+import { ENCODED_ACKNOWLEDGEMENTS } from './acknowledgementsData.js';
 
 function decodeEncodedJson(encoded) {
     const binary = atob(encoded);
@@ -49,6 +50,50 @@ function renderChangelog() {
         console.error('[WQP] 更新日志解码失败：', error);
         container.className = 'changelog-error';
         container.textContent = '更新日志加载失败。';
+    }
+}
+
+function renderAcknowledgements() {
+    const container = document.getElementById('acknowledgementsBox');
+    if (!container) return;
+
+    try {
+        const acknowledgements = decodeEncodedJson(ENCODED_ACKNOWLEDGEMENTS);
+        if (!acknowledgements || !Array.isArray(acknowledgements.items)) {
+            throw new Error('Invalid acknowledgements payload');
+        }
+
+        const fragment = document.createDocumentFragment();
+        const title = document.createElement('div');
+        title.className = 'section-title acknowledgements-title';
+        title.textContent = String(acknowledgements.title || '致谢与友情链接');
+        fragment.appendChild(title);
+
+        const list = document.createElement('ul');
+        list.className = 'acknowledgements-list';
+        acknowledgements.items.forEach((item) => {
+            try {
+                const url = new URL(String(item?.href || ''));
+                if (!['http:', 'https:'].includes(url.protocol)) return;
+
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = url.href;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = String(item?.name || url.href);
+                listItem.appendChild(link);
+                list.appendChild(listItem);
+            } catch (error) {
+                console.warn('[WQP] 致谢链接无效：', error);
+            }
+        });
+        fragment.appendChild(list);
+        container.replaceChildren(fragment);
+    } catch (error) {
+        console.error('[WQP] 致谢与友情链接解码失败：', error);
+        container.className = 'acknowledgements-error';
+        container.textContent = '致谢与友情链接加载失败。';
     }
 }
 
@@ -158,4 +203,5 @@ function renderGuide() {
 export function initEncodedContentPanels() {
     renderGuide();
     renderChangelog();
+    renderAcknowledgements();
 }
