@@ -23,9 +23,9 @@
 
         <nav class="tabs" aria-label="侧边栏功能">
             <button class="tab is-active" type="button" data-tab="settings">设置</button>
-            <button class="tab" type="button" data-tab="session">Session</button>
             <button class="tab" type="button" data-tab="prodmemo">ProdMemo</button>
             <button class="tab" type="button" data-tab="community">Community</button>
+            <button class="tab" type="button" data-tab="help">指南&amp;日志</button>
         </nav>
 
         <section id="settingsPanel" class="panel is-active" data-panel="settings">
@@ -49,10 +49,17 @@
                     <input id="geniusAlphaCount" type="number" min="0" step="1" required>
                 </label>
 
-                <div class="section-title">AI Forum Assistant</div>
+                <div class="section-title">AI 论坛助手</div>
                 <label class="check-row">
                     <input id="llmEnabled" type="checkbox">
                     <span>启用 AI 总结和评论</span>
+                </label>
+                <label class="field">
+                    <span>论坛助手默认状态</span>
+                    <select id="llmDefaultState">
+                        <option value="expanded">展开</option>
+                        <option value="collapsed">收起</option>
+                    </select>
                 </label>
                 <label class="field">
                     <span>Base URL</span>
@@ -75,9 +82,7 @@
                 <input id="importDataZipFile" type="file" accept=".zip,application/zip,application/x-zip-compressed" hidden>
             </div>
             <div id="dataMeta" class="info-box"></div>
-        </section>
 
-        <section id="sessionPanel" class="panel" data-panel="session">
             <div class="section-title">会话保活</div>
             <form id="sessionForm" class="form-stack">
                 <label class="check-row">
@@ -200,6 +205,12 @@
             <div class="section-title">运行日志</div>
             <div id="communitySummary" class="info-box"></div>
             <ol id="communityLog" class="log-list" aria-live="polite"></ol>
+        </section>
+
+        <section id="helpPanel" class="panel" data-panel="help">
+            <div id="guideBox" class="guide-box" aria-live="polite"></div>
+            <div class="section-title">更新日志</div>
+            <div id="changelogBox" class="changelog-box" aria-live="polite"></div>
         </section>
     </main>
 

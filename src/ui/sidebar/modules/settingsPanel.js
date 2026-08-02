@@ -8,6 +8,7 @@ const ids = {
     geniusAlphaCount: 'geniusAlphaCount',
     apiMonitorEnabled: 'apiMonitorEnabled',
     llmEnabled: 'llmEnabled',
+    llmDefaultState: 'llmDefaultState',
     llmBaseUrl: 'llmBaseUrl',
     llmModel: 'llmModel',
     llmApiKey: 'llmApiKey',
@@ -37,6 +38,7 @@ function readLlmConfigFromForm() {
     const apiKey = rawApiKey === '********' ? '' : rawApiKey;
     return {
         enabled: document.getElementById(ids.llmEnabled).checked,
+        defaultCollapsed: document.getElementById(ids.llmDefaultState).value === 'collapsed',
         baseUrl: document.getElementById(ids.llmBaseUrl).value.trim(),
         model: document.getElementById(ids.llmModel).value.trim(),
         apiKey,
@@ -46,6 +48,7 @@ function readLlmConfigFromForm() {
 
 function writeLlmConfigToForm(config = {}) {
     document.getElementById(ids.llmEnabled).checked = config.enabled === true;
+    document.getElementById(ids.llmDefaultState).value = config.defaultCollapsed === true ? 'collapsed' : 'expanded';
     document.getElementById(ids.llmBaseUrl).value = config.baseUrl || '';
     document.getElementById(ids.llmModel).value = config.model || '';
     const apiKeyInput = document.getElementById(ids.llmApiKey);

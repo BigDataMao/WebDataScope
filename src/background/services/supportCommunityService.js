@@ -1147,7 +1147,7 @@ async function fetchCommunityPostDetail(postRef, ctx = {}) {
 
 async function buildCommunityAiContext(payload = {}, ctx = {}) {
     const postRef = payload.postUrl || payload.postId;
-    if (!postRef) throw new Error('postUrl or postId is required');
+    if (!postRef) throw new Error('缺少帖子链接或帖子 ID');
     await ensureSupportReady(payload, ctx);
 
     const post = await fetchCommunityPostDetail(postRef, ctx);
@@ -1225,7 +1225,7 @@ async function saveCommunityAiPatch(postId, patch) {
 
 export async function getCachedCommunityAiSummary(payload = {}) {
     const postRef = payload.postUrl || payload.postId;
-    if (!postRef) throw new Error('postUrl or postId is required');
+    if (!postRef) throw new Error('缺少帖子链接或帖子 ID');
     const postId = parseApiId(postRef, 'posts', 'postId');
     const state = await getCommunityState();
     const cachedSummary = state.aiByPost?.[postId]?.summary;
@@ -1239,7 +1239,7 @@ export async function getCachedCommunityAiSummary(payload = {}) {
 }
 
 export async function summarizeCommunityPostWithAi(payload = {}, ctx = {}) {
-    progress(ctx, 'Fetching post and comments for AI summary...');
+    progress(ctx, '正在获取帖子和评论以生成 AI 总结…');
     const context = await buildCommunityAiContext(payload, ctx);
     const contextHash = buildCommunityAiContextHash(context);
     const llmConfig = await getLlmConfig();
@@ -1251,14 +1251,14 @@ export async function summarizeCommunityPostWithAi(payload = {}, ctx = {}) {
         && cachedSummary?.cache?.baseUrl === llmConfig.baseUrl
         && cachedSummary?.cache?.promptVersion === AI_SUMMARY_PROMPT_VERSION
         && cachedSummary?.summaryMarkdown) {
-        progress(ctx, `Using cached AI summary for ${context.source.postId}.`);
+        progress(ctx, `正在使用帖子 ${context.source.postId} 的 AI 总结缓存。`);
         return {
             ...cachedSummary,
             cached: true,
         };
     }
 
-    progress(ctx, `Summarizing ${context.comments.length}/${context.source.totalCommentCount} comments with AI...`);
+    progress(ctx, `正在使用 AI 总结 ${context.comments.length}/${context.source.totalCommentCount} 条评论…`);
 
     const { text, usage, model } = await runLlmText({
         taskName: 'community summary',
@@ -1347,11 +1347,11 @@ export async function summarizeCommunityPostWithAi(payload = {}, ctx = {}) {
 }
 
 export async function draftCommunityPostCommentWithAi(payload = {}, ctx = {}) {
-    progress(ctx, 'Fetching post and comments for AI comment draft...');
+    progress(ctx, '正在获取帖子和评论以生成 AI 回复草稿…');
     const context = await buildCommunityAiContext(payload, ctx);
     const customInstruction = String(payload.customInstruction || '').trim();
 
-    progress(ctx, 'Drafting AI comment...');
+    progress(ctx, '正在生成 AI 回复草稿…');
     const { text, usage, model } = await runLlmText({
         taskName: 'community comment draft',
         systemPrompt: [
@@ -1422,14 +1422,14 @@ export async function draftCommunityPostCommentWithAi(payload = {}, ctx = {}) {
 
 export async function createCommunityPostComment(payload = {}, ctx = {}) {
     const postRef = payload.postUrl || payload.postId;
-    if (!postRef) throw new Error('postUrl or postId is required');
+    if (!postRef) throw new Error('缺少帖子链接或帖子 ID');
     const postId = parseApiId(postRef, 'posts', 'postId');
     const body = String(payload.commentHtml || markdownToHtml(payload.commentText || '')).trim();
-    if (!body) throw new Error('comment body is required');
+    if (!body) throw new Error('回复内容不能为空');
 
     await ensureSupportReady(payload, ctx);
     const token = await getCsrfToken(ctx);
-    progress(ctx, `Posting comment to ${postId}...`);
+    progress(ctx, `正在向帖子 ${postId} 发布回复…`);
     const response = await fetch(`${SUPPORT_BASE}/api/v2/community/posts/${encodeURIComponent(postId)}/comments.json`, withCredentials({
         method: 'POST',
         headers: {
@@ -1447,7 +1447,7 @@ export async function createCommunityPostComment(payload = {}, ctx = {}) {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
         const detail = data?.error || data?.description || data?.message || response.statusText;
-        throw new Error(`Comment post failed (${response.status}): ${detail}`);
+        throw new Error(`回复发布失败（${response.status}）：${detail}`);
     }
 
     const comment = normalizePostComment(data?.comment || data, postId);
