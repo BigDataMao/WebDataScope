@@ -18,6 +18,11 @@ function runProdMemo(method, ...args) {
         .then((service) => service[method](...args));
 }
 
+function runCommunityPostMarker(method, payload) {
+    return import('./communityPostMarkerService.js')
+        .then((service) => service[method](payload));
+}
+
 function respond(sendResponse, promise) {
     promise
         .then((data) => sendResponse({ ok: true, data }))
@@ -116,6 +121,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             postId: msg.postId,
             commentText: msg.commentText,
             commentHtml: msg.commentHtml,
+        }));
+    }
+    if (msg.type === 'WQP_COMMUNITY_POST_MARKERS_GET') {
+        return respond(sendResponse, runCommunityPostMarker('getCommunityPostMarkers', {
+            postIds: msg.postIds,
+        }));
+    }
+    if (msg.type === 'WQP_COMMUNITY_POST_MARK_READ') {
+        return respond(sendResponse, runCommunityPostMarker('markCommunityPostRead', {
+            postId: msg.postId,
+            postUrl: msg.postUrl,
+            title: msg.title,
+        }));
+    }
+    if (msg.type === 'WQP_COMMUNITY_POST_FAVORITE_SET') {
+        return respond(sendResponse, runCommunityPostMarker('setCommunityPostFavorite', {
+            postId: msg.postId,
+            postUrl: msg.postUrl,
+            title: msg.title,
+            favorite: msg.favorite,
         }));
     }
 

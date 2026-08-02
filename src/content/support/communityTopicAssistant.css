@@ -249,16 +249,51 @@
     opacity: 0.55;
 }
 
+.posts-list .wqp-topic-read-marker,
 .posts-list .wqp-topic-ai-posted-marker {
     display: inline-block;
     margin-left: 6px;
-    border: 1px solid #86efac;
     border-radius: 999px;
-    background: #f0fdf4;
-    color: #15803d;
     font: 700 11px/1 system-ui, sans-serif;
     padding: 4px 7px;
     vertical-align: middle;
+}
+
+.posts-list .wqp-topic-read-marker {
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+}
+
+.posts-list .wqp-topic-ai-posted-marker {
+    border: 1px solid #86efac;
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.posts-list button.wqp-topic-favorite-button {
+    display: inline-block;
+    min-height: 0;
+    margin-left: 6px;
+    border: 1px solid #fcd34d;
+    border-radius: 999px;
+    background: #fffbeb;
+    color: #a16207;
+    cursor: pointer;
+    font: 700 11px/1 system-ui, sans-serif;
+    padding: 4px 7px;
+    vertical-align: middle;
+}
+
+.posts-list button.wqp-topic-favorite-button.is-favorite {
+    border-color: #f59e0b;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.posts-list button.wqp-topic-favorite-button:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 
 @media (max-width: 720px) {

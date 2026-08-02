@@ -10,6 +10,9 @@
     let card = null;
     let posts = [];
     let statusByPost = {};
+    let markerByPost = {};
+    let aiEnabled = false;
+    let markerRefreshPromise = null;
     let skipPosted = true;
     let customInstruction = '';
     let running = false;
@@ -165,8 +168,9 @@
     function decoratePosts() {
         posts.forEach((post) => {
             if (!post.row || !post.anchor) return;
+            const markerHost = post.row.querySelector('.post-overview-item') || post.anchor.parentElement;
             let selector = post.row.querySelector(`.wqp-topic-ai-selector[data-post-id="${post.postId}"]`);
-            if (!selector) {
+            if (aiEnabled && !selector) {
                 selector = document.createElement('label');
                 selector.className = 'wqp-topic-ai-selector';
                 selector.dataset.postId = post.postId;
@@ -177,20 +181,53 @@
                 `;
                 post.row.insertBefore(selector, post.row.firstChild);
             }
+            if (!aiEnabled && selector) selector.remove();
 
-            const input = selector.querySelector('input');
+            const input = selector?.querySelector('input');
             const posted = statusByPost[post.postId]?.lastPostedComment;
             if (input) {
                 input.disabled = Boolean(skipPosted && posted);
                 if (input.disabled) input.checked = false;
             }
 
+            const postMarker = markerByPost[post.postId] || {};
+            let readMarker = post.row.querySelector(`.wqp-topic-read-marker[data-post-id="${post.postId}"]`);
+            if (postMarker.readAt && !readMarker) {
+                readMarker = document.createElement('span');
+                readMarker.className = 'wqp-topic-read-marker';
+                readMarker.dataset.postId = post.postId;
+                markerHost?.appendChild(readMarker);
+            }
+            if (readMarker) {
+                readMarker.textContent = '已阅读';
+                readMarker.title = postMarker.lastReadAt
+                    ? `最近阅读：${formatDateTime(postMarker.lastReadAt)}`
+                    : '此帖子已经打开阅读';
+                readMarker.hidden = !postMarker.readAt;
+            }
+
+            let favoriteButton = post.row.querySelector(`.wqp-topic-favorite-button[data-post-id="${post.postId}"]`);
+            if (!favoriteButton) {
+                favoriteButton = document.createElement('button');
+                favoriteButton.type = 'button';
+                favoriteButton.className = 'wqp-topic-favorite-button';
+                favoriteButton.dataset.postId = post.postId;
+                markerHost?.appendChild(favoriteButton);
+            }
+            const favorite = postMarker.favorite === true;
+            favoriteButton.classList.toggle('is-favorite', favorite);
+            favoriteButton.textContent = favorite ? '★ 已收藏' : '☆ 收藏';
+            favoriteButton.setAttribute('aria-pressed', String(favorite));
+            favoriteButton.setAttribute('aria-label', favorite ? `取消收藏：${post.title}` : `收藏：${post.title}`);
+            favoriteButton.title = favorite && postMarker.favoritedAt
+                ? `收藏于 ${formatDateTime(postMarker.favoritedAt)}；点击取消收藏`
+                : favorite ? '点击取消收藏' : '收藏此帖子';
+
             let marker = post.row.querySelector(`.wqp-topic-ai-posted-marker[data-post-id="${post.postId}"]`);
             if (posted && !marker) {
                 marker = document.createElement('span');
                 marker.className = 'wqp-topic-ai-posted-marker';
                 marker.dataset.postId = post.postId;
-                const markerHost = post.row.querySelector('.post-overview-item') || post.anchor.parentElement;
                 markerHost?.appendChild(marker);
             }
             if (marker) {
@@ -202,6 +239,44 @@
             }
         });
         updateSelectionCount();
+    }
+
+    async function refreshPostMarkers() {
+        if (!posts.length) return;
+        if (markerRefreshPromise) return markerRefreshPromise;
+        markerRefreshPromise = sendMessage('WQP_COMMUNITY_POST_MARKERS_GET', {
+            postIds: posts.map((post) => post.postId),
+        }).then((data) => {
+            markerByPost = data?.byPost || {};
+            decoratePosts();
+        }).catch((error) => {
+            console.warn('[WQP Community] 无法刷新阅读与收藏状态：', error);
+        }).finally(() => {
+            markerRefreshPromise = null;
+        });
+        return markerRefreshPromise;
+    }
+
+    async function toggleFavorite(postId) {
+        const post = posts.find((item) => item.postId === postId);
+        if (!post) return;
+        const button = post.row?.querySelector(`.wqp-topic-favorite-button[data-post-id="${postId}"]`);
+        if (button) button.disabled = true;
+        try {
+            const marker = await sendMessage('WQP_COMMUNITY_POST_FAVORITE_SET', {
+                postId,
+                postUrl: post.postUrl,
+                title: post.title,
+                favorite: markerByPost[postId]?.favorite !== true,
+            });
+            markerByPost[postId] = marker || {};
+            decoratePosts();
+        } catch (error) {
+            if (button) button.title = `收藏操作失败：${error.message || String(error)}`;
+            console.warn('[WQP Community] 收藏操作失败：', error);
+        } finally {
+            if (button?.isConnected) button.disabled = false;
+        }
     }
 
     function ensureCard() {
@@ -488,27 +563,68 @@
         decoratePosts();
     }
 
+    function handlePageClick(event) {
+        const favoriteButton = event.target?.closest?.('.wqp-topic-favorite-button');
+        if (!favoriteButton) return;
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFavorite(favoriteButton.dataset.postId);
+    }
+
+    function bindPageMarkerEvents() {
+        document.addEventListener('click', handlePageClick);
+        document.addEventListener('change', (event) => {
+            if (event.target?.classList?.contains('wqp-topic-ai-select-input')) updateSelectionCount();
+        });
+        window.addEventListener('pageshow', () => refreshPostMarkers());
+        window.addEventListener('focus', () => refreshPostMarkers());
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') refreshPostMarkers();
+        });
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'local' && changes.WQP_CommunityPostMarkers) refreshPostMarkers();
+        });
+    }
+
     async function initialize() {
         try {
-            const config = await sendMessage('WQP_LLM_CONFIG_GET');
-            if (config?.enabled !== true) return;
             posts = scanPosts();
             if (!posts.length) return;
-            ensureCard();
-            setCollapsed(config.defaultCollapsed === true);
-            const statusData = await sendMessage('WQP_COMMUNITY_AI_GET_POST_STATUSES', {
-                postIds: posts.map((post) => post.postId),
-            });
-            statusByPost = statusData?.byPost || {};
+
+            const [configResult, markerResult] = await Promise.allSettled([
+                sendMessage('WQP_LLM_CONFIG_GET'),
+                sendMessage('WQP_COMMUNITY_POST_MARKERS_GET', {
+                    postIds: posts.map((post) => post.postId),
+                }),
+            ]);
+            const config = configResult.status === 'fulfilled' ? configResult.value : {};
+            markerByPost = markerResult.status === 'fulfilled' ? (markerResult.value?.byPost || {}) : {};
+            aiEnabled = config?.enabled === true;
+
+            if (configResult.status === 'rejected') {
+                console.warn('[WQP Community] 无法读取 AI 配置：', configResult.reason);
+            }
+            if (markerResult.status === 'rejected') {
+                console.warn('[WQP Community] 无法读取阅读与收藏状态：', markerResult.reason);
+            }
+
+            if (aiEnabled) {
+                ensureCard();
+                setCollapsed(config.defaultCollapsed === true);
+                try {
+                    const statusData = await sendMessage('WQP_COMMUNITY_AI_GET_POST_STATUSES', {
+                        postIds: posts.map((post) => post.postId),
+                    });
+                    statusByPost = statusData?.byPost || {};
+                } catch (error) {
+                    console.warn('[WQP Community] 无法读取 AI 评论状态：', error);
+                }
+            }
             decoratePosts();
-            renderReady();
-            document.addEventListener('change', (event) => {
-                if (event.target?.classList?.contains('wqp-topic-ai-select-input')) updateSelectionCount();
-            });
+            if (aiEnabled) renderReady();
+            bindPageMarkerEvents();
         } catch (error) {
-            ensureCard();
-            const content = card?.querySelector('.wqp-topic-ai-content');
-            if (content) content.innerHTML = `<p class="wqp-topic-ai-error">初始化失败：${escapeHtml(error.message || String(error))}</p>`;
+            console.warn('[WQP Community] topics 页面助手初始化失败：', error);
         }
     }
 

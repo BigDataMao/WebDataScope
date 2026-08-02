@@ -263,6 +263,27 @@
         }
     }
 
+    async function markCurrentPostRead() {
+        const postId = location.pathname.match(/\/community\/posts\/(\d+)/)?.[1] || '';
+        if (!postId) return;
+        const title = document.querySelector('.community-post h1, .post-title, h1')?.textContent?.trim()
+            || document.title.replace(/\s+[–-]\s+WorldQuant BRAIN.*$/i, '').trim();
+        try {
+            await sendMessage('WQP_COMMUNITY_POST_MARK_READ', {
+                postId,
+                postUrl: location.href,
+                title,
+            });
+        } catch (error) {
+            console.warn('[WQP Community] 无法记录帖子阅读状态：', error);
+        }
+    }
+
+    function initialize() {
+        markCurrentPostRead();
+        showCardIfEnabled();
+    }
+
     async function loadCachedSummary() {
         try {
             const data = await sendMessage('WQP_COMMUNITY_AI_GET_CACHED_SUMMARY', { postUrl: location.href });
@@ -448,8 +469,8 @@
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', showCardIfEnabled, { once: true });
+        document.addEventListener('DOMContentLoaded', initialize, { once: true });
     } else {
-        showCardIfEnabled();
+        initialize();
     }
 })();
