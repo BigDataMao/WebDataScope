@@ -224,13 +224,24 @@
     font-weight: 600;
 }
 
-.posts-list .striped-list-item > .wqp-topic-ai-selector {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    align-self: center;
-    gap: 4px;
+.posts-list .striped-list-item > .wqp-topic-marker-rail {
+    display: grid;
+    flex: 0 0 76px;
+    align-self: stretch;
+    align-content: space-between;
+    justify-items: start;
+    grid-template-rows: auto auto auto;
+    min-width: 76px;
     margin-right: 10px;
+    padding: 2px 0;
+}
+
+.posts-list .wqp-topic-marker-rail > .wqp-topic-ai-selector {
+    display: inline-flex;
+    grid-row: 1;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
     border: 1px solid #bfdbfe;
     border-radius: 999px;
     background: #eff6ff;
@@ -249,14 +260,6 @@
     opacity: 0.55;
 }
 
-.posts-list .wqp-topic-title-markers {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
 .posts-list .wqp-topic-read-marker,
 .posts-list .wqp-topic-ai-posted-marker {
     display: inline-block;
@@ -268,7 +271,8 @@
 }
 
 .posts-list .wqp-topic-read-marker {
-    margin-left: 0;
+    grid-row: 3;
+    margin: 0;
     border: 1px solid #cbd5e1;
     background: #f8fafc;
     color: #475569;
@@ -282,8 +286,9 @@
 
 .posts-list button.wqp-topic-favorite-button {
     display: inline-block;
+    grid-row: 2;
     min-height: 0;
-    margin-left: 0;
+    margin: 0;
     border: 1px solid #fcd34d;
     border-radius: 999px;
     background: #fffbeb;
@@ -303,6 +308,10 @@
 .posts-list button.wqp-topic-favorite-button:disabled {
     cursor: wait;
     opacity: 0.6;
+}
+
+.posts-list .wqp-topic-marker-rail > [hidden] {
+    display: none !important;
 }
 
 @media (max-width: 720px) {

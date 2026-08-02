@@ -171,12 +171,13 @@
         posts.forEach((post) => {
             if (!post.row || !post.anchor) return;
             const markerHost = post.row.querySelector('.post-overview-item') || post.anchor.parentElement;
-            let titleMarkerHost = post.row.querySelector(`.wqp-topic-title-markers[data-post-id="${post.postId}"]`);
-            if (!titleMarkerHost) {
-                titleMarkerHost = document.createElement('span');
-                titleMarkerHost.className = 'wqp-topic-title-markers';
-                titleMarkerHost.dataset.postId = post.postId;
-                post.anchor.parentElement?.insertBefore(titleMarkerHost, post.anchor);
+            let markerRail = post.row.querySelector(`.wqp-topic-marker-rail[data-post-id="${post.postId}"]`);
+            if (!markerRail) {
+                markerRail = document.createElement('span');
+                markerRail.className = 'wqp-topic-marker-rail';
+                markerRail.dataset.postId = post.postId;
+                markerRail.setAttribute('aria-label', '帖子操作与状态');
+                post.row.insertBefore(markerRail, post.row.firstChild);
             }
             let selector = post.row.querySelector(`.wqp-topic-ai-selector[data-post-id="${post.postId}"]`);
             if (aiEnabled && !selector) {
@@ -188,9 +189,11 @@
                     <input class="wqp-topic-ai-select-input" type="checkbox" data-post-id="${post.postId}">
                     <span>AI</span>
                 `;
-                post.row.insertBefore(selector, post.row.firstChild);
             }
-            if (!aiEnabled && selector) selector.remove();
+            if (!aiEnabled && selector) {
+                selector.remove();
+                selector = null;
+            }
 
             const input = selector?.querySelector('input');
             const posted = statusByPost[post.postId]?.lastPostedComment;
@@ -229,8 +232,10 @@
             favoriteButton.title = favorite && postMarker.favoritedAt
                 ? `收藏于 ${formatDateTime(postMarker.favoritedAt)}；点击取消收藏`
                 : favorite ? '点击取消收藏' : '收藏此帖子';
-            titleMarkerHost?.appendChild(favoriteButton);
-            if (readMarker) titleMarkerHost?.appendChild(readMarker);
+            if (selector) markerRail.appendChild(selector);
+            markerRail.appendChild(favoriteButton);
+            if (readMarker) markerRail.appendChild(readMarker);
+            post.row.querySelector(`.wqp-topic-title-markers[data-post-id="${post.postId}"]`)?.remove();
 
             let marker = post.row.querySelector(`.wqp-topic-ai-posted-marker[data-post-id="${post.postId}"]`);
             if (posted && !marker) {
