@@ -83,7 +83,11 @@
                 "*://platform.worldquantbrain.com/learn/operators"
             ],
             "js": [
-                "src/content/platform/common/alphaDetailsPopup.js"
+                "src/content/platform/common/alphaDetailsPopup.js",
+                "src/content/platform/alpha/alphaDescriptionAssistant.js"
+            ],
+            "css": [
+                "src/content/platform/alpha/alphaDescriptionAssistant.css"
             ]
         },
         {
