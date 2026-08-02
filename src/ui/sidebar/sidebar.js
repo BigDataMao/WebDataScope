@@ -8,12 +8,12 @@ const panelInitializers = {
         await initProdMemoPanel();
     },
     community: async () => {
-        const { initCommunityPanel } = await import('./modules/communityPanel.js');
-        initCommunityPanel();
-    },
-    favorites: async () => {
-        const { initFavoritePostsPanel } = await import('./modules/favoritePostsPanel.js');
-        await initFavoritePostsPanel();
+        await Promise.all([
+            import('./modules/favoritePostsPanel.js')
+                .then(({ initFavoritePostsPanel }) => initFavoritePostsPanel()),
+            import('./modules/communityPanel.js')
+                .then(({ initCommunityPanel }) => initCommunityPanel()),
+        ]);
     },
     help: async () => {
         const { initEncodedContentPanels } = await import('./modules/encodedContentPanels.js');

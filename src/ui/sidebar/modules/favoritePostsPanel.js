@@ -5,13 +5,55 @@ const ids = {
     refresh: 'refreshFavoritePostsBtn',
     summary: 'favoritePostsSummary',
     list: 'favoritePostsList',
+    pageSize: 'favoritePostsPageSize',
+    pagination: 'favoritePostsPagination',
+    pageStatus: 'favoritePostsPageStatus',
+    previous: 'favoritePostsPrevBtn',
+    next: 'favoritePostsNextBtn',
 };
+
+const PAGE_SIZE_STORAGE_KEY = 'WQP_FavoritePostsPageSize';
+const DEFAULT_PAGE_SIZE = 5;
+const MIN_PAGE_SIZE = 1;
+const MAX_PAGE_SIZE = 50;
 
 let favoriteItems = [];
 let refreshPromise = null;
+let currentPage = 1;
+let pageSize = DEFAULT_PAGE_SIZE;
 
 function getEl(id) {
     return document.getElementById(id);
+}
+
+function normalizePageSize(value) {
+    const number = Math.trunc(Number(value));
+    if (!Number.isFinite(number)) return DEFAULT_PAGE_SIZE;
+    return Math.min(MAX_PAGE_SIZE, Math.max(MIN_PAGE_SIZE, number));
+}
+
+function getStoredPageSize() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(PAGE_SIZE_STORAGE_KEY, (items) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+                return;
+            }
+            resolve(normalizePageSize(items?.[PAGE_SIZE_STORAGE_KEY]));
+        });
+    });
+}
+
+function savePageSize(value) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.set({ [PAGE_SIZE_STORAGE_KEY]: value }, () => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+                return;
+            }
+            resolve();
+        });
+    });
 }
 
 function formatDateTime(value) {
@@ -38,12 +80,21 @@ function appendFavoriteDate(card, item) {
 function renderFavorites() {
     const summary = getEl(ids.summary);
     const list = getEl(ids.list);
+    const pagination = getEl(ids.pagination);
+    const pageStatus = getEl(ids.pageStatus);
+    const previous = getEl(ids.previous);
+    const next = getEl(ids.next);
     if (!summary || !list) return;
 
+    const pageCount = Math.max(1, Math.ceil(favoriteItems.length / pageSize));
+    currentPage = Math.min(Math.max(1, currentPage), pageCount);
     summary.className = 'info-box';
-    summary.textContent = `共收藏 ${favoriteItems.length} 个论坛帖子。`;
+    summary.textContent = favoriteItems.length
+        ? `共收藏 ${favoriteItems.length} 个论坛帖子；第 ${currentPage}/${pageCount} 页，每页 ${pageSize} 条。`
+        : '共收藏 0 个论坛帖子。';
     list.innerHTML = '';
     if (!favoriteItems.length) {
+        if (pagination) pagination.hidden = true;
         const empty = document.createElement('div');
         empty.className = 'empty-state';
         empty.textContent = '暂无收藏。请在论坛 topics 页面点击“☆ 收藏”。';
@@ -51,8 +102,14 @@ function renderFavorites() {
         return;
     }
 
+    if (pagination) pagination.hidden = false;
+    if (pageStatus) pageStatus.textContent = `第 ${currentPage} / ${pageCount} 页`;
+    if (previous) previous.disabled = currentPage <= 1;
+    if (next) next.disabled = currentPage >= pageCount;
+
     const fragment = document.createDocumentFragment();
-    favoriteItems.forEach((item) => {
+    const pageStart = (currentPage - 1) * pageSize;
+    favoriteItems.slice(pageStart, pageStart + pageSize).forEach((item) => {
         const card = document.createElement('article');
         card.className = 'favorite-post-card';
         card.dataset.postId = String(item.postId || '');
@@ -89,6 +146,7 @@ function renderFavorites() {
         fragment.appendChild(card);
     });
     list.appendChild(fragment);
+    list.scrollTop = 0;
 }
 
 async function refreshFavorites() {
@@ -137,8 +195,39 @@ async function removeFavorite(postId, button) {
 export async function initFavoritePostsPanel() {
     const refreshButton = getEl(ids.refresh);
     const list = getEl(ids.list);
+    const pageSizeInput = getEl(ids.pageSize);
+    const previous = getEl(ids.previous);
+    const next = getEl(ids.next);
+
+    try {
+        pageSize = await getStoredPageSize();
+    } catch (error) {
+        console.warn('[WQP] 无法读取论坛收藏每页数量：', error);
+    }
+    if (pageSizeInput) pageSizeInput.value = String(pageSize);
+
     refreshButton?.addEventListener('click', () => {
         refreshFavorites().catch(() => {});
+    });
+    pageSizeInput?.addEventListener('change', () => {
+        pageSize = normalizePageSize(pageSizeInput.value);
+        pageSizeInput.value = String(pageSize);
+        currentPage = 1;
+        renderFavorites();
+        savePageSize(pageSize).catch((error) => {
+            setStatus(`保存收藏每页数量失败：${error.message}`, 'error');
+        });
+    });
+    previous?.addEventListener('click', () => {
+        if (currentPage <= 1) return;
+        currentPage -= 1;
+        renderFavorites();
+    });
+    next?.addEventListener('click', () => {
+        const pageCount = Math.max(1, Math.ceil(favoriteItems.length / pageSize));
+        if (currentPage >= pageCount) return;
+        currentPage += 1;
+        renderFavorites();
     });
     list?.addEventListener('click', (event) => {
         const button = event.target?.closest?.('[data-action="remove-favorite"]');
@@ -147,6 +236,12 @@ export async function initFavoritePostsPanel() {
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'local' && changes.WQP_CommunityPostMarkers) {
             refreshFavorites().catch(() => {});
+        }
+        if (namespace === 'local' && changes[PAGE_SIZE_STORAGE_KEY]) {
+            pageSize = normalizePageSize(changes[PAGE_SIZE_STORAGE_KEY].newValue);
+            currentPage = 1;
+            if (pageSizeInput) pageSizeInput.value = String(pageSize);
+            renderFavorites();
         }
     });
     await refreshFavorites();

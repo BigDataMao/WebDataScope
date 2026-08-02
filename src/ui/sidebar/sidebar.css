@@ -59,7 +59,7 @@ h1 {
 
 .tabs {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
     padding: 8px;
     background: var(--panel);
@@ -507,12 +507,64 @@ button.loading::before {
 
 .favorite-post-list {
     display: flex;
-    max-height: calc(100vh - 245px);
+    max-height: min(420px, 48vh);
     min-height: 80px;
     flex-direction: column;
     gap: 8px;
     margin-top: 10px;
     overflow: auto;
+}
+
+.community-favorites-title {
+    margin-top: 0;
+}
+
+.favorite-post-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 8px;
+}
+
+.favorite-post-page-size {
+    display: grid;
+    grid-template-columns: auto minmax(70px, 96px);
+    align-items: center;
+    gap: 8px;
+}
+
+.favorite-post-page-size span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.favorite-post-page-size input {
+    min-height: 34px;
+    background: var(--panel);
+}
+
+.favorite-post-pagination {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.favorite-post-pagination[hidden] {
+    display: none;
+}
+
+.favorite-post-pagination button:last-child {
+    justify-self: end;
+}
+
+.favorite-post-pagination span {
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
 }
 
 .favorite-post-card {
