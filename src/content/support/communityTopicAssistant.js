@@ -190,6 +190,16 @@
             button.dataset.action = 'toggle-unread-filter';
             button.setAttribute('aria-controls', 'main-content');
         }
+        if (!button.querySelector('[data-role="unread-filter-label"]')) {
+            button.innerHTML = `
+                <svg class="wqp-topic-unread-filter-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"></path>
+                    <circle cx="12" cy="12" r="2.6"></circle>
+                </svg>
+                <span data-role="unread-filter-label"></span>
+                <span class="wqp-topic-unread-filter-count" data-role="unread-filter-count" aria-hidden="true"></span>
+            `;
+        }
         if (button.previousElementSibling !== followButton) {
             followButton.parentElement.insertBefore(button, followButton.nextSibling);
         }
@@ -214,7 +224,13 @@
         if (button) {
             button.classList.toggle('is-active', showUnreadOnly);
             button.setAttribute('aria-pressed', String(showUnreadOnly));
-            button.textContent = showUnreadOnly ? '显示本页面全部帖子' : '只显示本页面未阅读帖子';
+            const label = button.querySelector('[data-role="unread-filter-label"]');
+            const count = button.querySelector('[data-role="unread-filter-count"]');
+            if (label) label.textContent = showUnreadOnly ? '显示本页面全部帖子' : '只显示本页面未阅读帖子';
+            if (count) count.textContent = showUnreadOnly ? `${unreadCount}/${posts.length}` : String(unreadCount);
+            button.setAttribute('aria-label', showUnreadOnly
+                ? `显示本页面全部 ${posts.length} 个帖子；当前显示 ${unreadCount} 个未阅读帖子`
+                : `只显示本页面 ${unreadCount} 个未阅读帖子`);
             button.title = showUnreadOnly
                 ? `当前仅显示 ${unreadCount} 个未阅读帖子；点击恢复本页全部 ${posts.length} 个帖子`
                 : `本页面共有 ${unreadCount} 个未阅读帖子`;

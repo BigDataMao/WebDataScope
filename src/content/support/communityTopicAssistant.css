@@ -225,32 +225,86 @@
 }
 
 #wqp-topic-unread-filter-button {
-    min-height: 34px;
+    display: inline-flex;
+    min-height: 36px;
+    max-width: 100%;
+    align-items: center;
+    gap: 8px;
     margin-left: 8px;
-    border: 1px solid #94a3b8;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #334155;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 2px 7px rgba(37, 99, 235, 0.1);
+    color: #1e40af;
     cursor: pointer;
-    font: 600 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    padding: 7px 11px;
+    font: 650 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 7px 8px 7px 12px;
+    transition: border-color 150ms ease, box-shadow 150ms ease, color 150ms ease,
+        background 150ms ease, transform 150ms ease;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 #wqp-topic-unread-filter-button:hover {
     border-color: #2563eb;
+    box-shadow: 0 5px 13px rgba(37, 99, 235, 0.18);
     color: #1d4ed8;
+    transform: translateY(-1px);
 }
 
 #wqp-topic-unread-filter-button.is-active {
     border-color: #2563eb;
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.26);
+    color: #ffffff;
+}
+
+#wqp-topic-unread-filter-button.is-active:hover {
+    border-color: #1d4ed8;
+    box-shadow: 0 6px 16px rgba(29, 78, 216, 0.32);
+    color: #ffffff;
+}
+
+#wqp-topic-unread-filter-button:active {
+    box-shadow: 0 2px 7px rgba(37, 99, 235, 0.18);
+    transform: translateY(0) scale(0.98);
 }
 
 #wqp-topic-unread-filter-button:focus-visible {
     outline: 2px solid #60a5fa;
     outline-offset: 2px;
+}
+
+#wqp-topic-unread-filter-button .wqp-topic-unread-filter-icon {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+#wqp-topic-unread-filter-button .wqp-topic-unread-filter-count {
+    display: inline-flex;
+    min-width: 24px;
+    height: 22px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border: 1px solid rgba(37, 99, 235, 0.14);
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font: 750 11px/1 system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+#wqp-topic-unread-filter-button.is-active .wqp-topic-unread-filter-count {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 #main-content.posts-list > section.wqp-topic-read-filtered {
@@ -348,6 +402,14 @@
 }
 
 @media (max-width: 720px) {
+    #wqp-topic-unread-filter-button {
+        gap: 6px;
+        margin-top: 6px;
+        margin-left: 6px;
+        font-size: 12px;
+        padding-left: 10px;
+    }
+
     #wqp-community-topic-ai {
         top: 10px;
         right: 10px;
