@@ -59,7 +59,7 @@ h1 {
 
 .tabs {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0;
     padding: 8px;
     background: var(--panel);
@@ -503,6 +503,75 @@ button.loading::before {
     background: var(--panel);
     color: var(--muted);
     text-align: center;
+}
+
+.favorite-post-list {
+    display: flex;
+    max-height: calc(100vh - 245px);
+    min-height: 80px;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    overflow: auto;
+}
+
+.favorite-post-card {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel);
+}
+
+.favorite-post-head {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.favorite-post-title {
+    min-width: 0;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+
+.favorite-post-title:hover {
+    color: var(--accent-dark);
+    text-decoration: underline;
+}
+
+.favorite-post-remove {
+    min-height: 26px;
+    flex: 0 0 auto;
+    padding: 3px 7px;
+    border-color: #f0b4ac;
+    background: #fff7f5;
+    color: var(--error);
+    font-size: 11px;
+}
+
+.favorite-post-url {
+    display: block;
+    margin-top: 6px;
+    overflow: hidden;
+    color: var(--muted);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.favorite-post-date {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
 }
 
 .profile-link-row {

@@ -140,10 +140,12 @@
             seen.add(postId);
             const section = anchor.closest('section[role="region"]') || anchor.closest('section');
             const row = anchor.closest('.striped-list-item') || section;
+            const postDate = row?.querySelector('.meta-group time[datetime], time[datetime]')?.getAttribute('datetime') || '';
             return {
                 postId,
                 postUrl: anchor.href,
                 title: anchor.textContent?.trim() || `帖子 ${postId}`,
+                postDate,
                 anchor,
                 row,
             };
@@ -274,6 +276,7 @@
                 postId,
                 postUrl: post.postUrl,
                 title: post.title,
+                postDate: post.postDate,
                 favorite: markerByPost[postId]?.favorite !== true,
             });
             markerByPost[postId] = marker || {};

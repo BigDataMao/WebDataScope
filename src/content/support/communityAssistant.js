@@ -268,11 +268,14 @@
         if (!postId) return;
         const title = document.querySelector('.community-post h1, .post-title, h1')?.textContent?.trim()
             || document.title.replace(/\s+[–-]\s+WorldQuant BRAIN.*$/i, '').trim();
+        const postDate = document.querySelector('.community-post time[datetime], article time[datetime], time[datetime]')
+            ?.getAttribute('datetime') || '';
         try {
             await sendMessage('WQP_COMMUNITY_POST_MARK_READ', {
                 postId,
                 postUrl: location.href,
                 title,
+                postDate,
             });
         } catch (error) {
             console.warn('[WQP Community] 无法记录帖子阅读状态：', error);

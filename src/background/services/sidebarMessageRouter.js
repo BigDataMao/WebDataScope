@@ -2,6 +2,7 @@
 import { generateAlphaDescriptionWithAi } from './alphaDescriptionService.js';
 import {
     getCommunityPostMarkers,
+    listCommunityFavoritePosts,
     markCommunityPostRead,
     setCommunityPostFavorite,
 } from './communityPostMarkerService.js';
@@ -127,11 +128,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             postIds: msg.postIds,
         }));
     }
+    if (msg.type === 'WQP_COMMUNITY_POST_FAVORITES_GET') {
+        return respond(sendResponse, listCommunityFavoritePosts());
+    }
     if (msg.type === 'WQP_COMMUNITY_POST_MARK_READ') {
         return respond(sendResponse, markCommunityPostRead({
             postId: msg.postId,
             postUrl: msg.postUrl,
             title: msg.title,
+            postDate: msg.postDate,
         }));
     }
     if (msg.type === 'WQP_COMMUNITY_POST_FAVORITE_SET') {
@@ -139,6 +144,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             postId: msg.postId,
             postUrl: msg.postUrl,
             title: msg.title,
+            postDate: msg.postDate,
             favorite: msg.favorite,
         }));
     }

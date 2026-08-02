@@ -11,6 +11,10 @@ const panelInitializers = {
         const { initCommunityPanel } = await import('./modules/communityPanel.js');
         initCommunityPanel();
     },
+    favorites: async () => {
+        const { initFavoritePostsPanel } = await import('./modules/favoritePostsPanel.js');
+        await initFavoritePostsPanel();
+    },
     help: async () => {
         const { initEncodedContentPanels } = await import('./modules/encodedContentPanels.js');
         initEncodedContentPanels();

@@ -21,6 +21,7 @@
             <button class="tab is-active" type="button" data-tab="settings">设置</button>
             <button class="tab" type="button" data-tab="prodmemo">ProdMemo</button>
             <button class="tab" type="button" data-tab="community">Community</button>
+            <button class="tab" type="button" data-tab="favorites">收藏</button>
             <button class="tab" type="button" data-tab="help">指南&amp;日志</button>
         </nav>
 
@@ -201,6 +202,15 @@
             <div class="section-title">运行日志</div>
             <div id="communitySummary" class="info-box"></div>
             <ol id="communityLog" class="log-list" aria-live="polite"></ol>
+        </section>
+
+        <section id="favoritesPanel" class="panel" data-panel="favorites">
+            <div class="section-title">论坛收藏</div>
+            <div class="action-row">
+                <button id="refreshFavoritePostsBtn" type="button">刷新收藏</button>
+            </div>
+            <div id="favoritePostsSummary" class="info-box" aria-live="polite"></div>
+            <div id="favoritePostsList" class="favorite-post-list" aria-live="polite"></div>
         </section>
 
         <section id="helpPanel" class="panel" data-panel="help">

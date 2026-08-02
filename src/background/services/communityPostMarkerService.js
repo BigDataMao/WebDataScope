@@ -32,6 +32,7 @@ function normalizeEntry(postId, value = {}) {
         postId,
         postUrl: normalizeHttpUrl(value.postUrl),
         title: String(value.title || '').trim(),
+        postDate: String(value.postDate || ''),
         readAt: String(value.readAt || ''),
         lastReadAt: String(value.lastReadAt || value.readAt || ''),
         favorite: value.favorite === true,
@@ -74,6 +75,26 @@ export async function getCommunityPostMarkers(payload = {}) {
     return { byPost };
 }
 
+export async function listCommunityFavoritePosts() {
+    const state = await getMarkerState();
+    const items = Object.entries(state)
+        .map(([rawPostId, value]) => {
+            const postId = parsePostId(rawPostId);
+            return postId ? normalizeEntry(postId, value) : null;
+        })
+        .filter((entry) => entry?.favorite)
+        .map((entry) => ({
+            ...entry,
+            postUrl: entry.postUrl || `https://support.worldquantbrain.com/hc/en-us/community/posts/${entry.postId}`,
+            title: entry.title || `帖子 ${entry.postId}`,
+        }))
+        .sort((a, b) => String(b.favoritedAt || b.postDate).localeCompare(String(a.favoritedAt || a.postDate)));
+    return {
+        count: items.length,
+        items,
+    };
+}
+
 export function markCommunityPostRead(payload = {}) {
     const postRef = payload.postId || payload.postUrl;
     const now = new Date().toISOString();
@@ -81,6 +102,7 @@ export function markCommunityPostRead(payload = {}) {
         ...current,
         postUrl: normalizeHttpUrl(payload.postUrl) || current.postUrl,
         title: String(payload.title || '').trim() || current.title,
+        postDate: String(payload.postDate || '').trim() || current.postDate,
         readAt: current.readAt || now,
         lastReadAt: now,
         updatedAt: now,
@@ -96,6 +118,7 @@ export function setCommunityPostFavorite(payload = {}) {
             ...current,
             postUrl: normalizeHttpUrl(payload.postUrl) || current.postUrl,
             title: String(payload.title || '').trim() || current.title,
+            postDate: String(payload.postDate || '').trim() || current.postDate,
             favorite,
             favoritedAt: favorite ? (current.favoritedAt || now) : '',
             updatedAt: now,
