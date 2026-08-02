@@ -30,3 +30,14 @@ Because the same browser installation may switch WQ accounts, the database idemp
 5. Apply remote migrations to production, deploy production, repeat the checks, then place the production `/v1/registrations` URL in the extension.
 
 The administrator credentials are stored only in the ignored `.admin-credentials.txt`. Rotate them by generating a new password, updating `ADMIN_AUTH_DIGEST`, and securely retaining the new local credential.
+
+## Deployed resources
+
+- Production registration: `https://webdatascope-telemetry.zkhweb.workers.dev/v1/registrations`
+- Production admin: `https://webdatascope-telemetry.zkhweb.workers.dev/admin`
+- Staging registration: `https://webdatascope-telemetry-staging.zkhweb.workers.dev/v1/registrations`
+- Staging admin: `https://webdatascope-telemetry-staging.zkhweb.workers.dev/admin`
+- Production D1: `webdatascope-telemetry`
+- Staging D1: `webdatascope-telemetry-staging`
+
+The current mainland network may poison or block `workers.dev` DNS. Deployment and external GitHub-runner smoke tests can still succeed while a direct local request times out; use a trusted network path when opening the admin page in that environment.

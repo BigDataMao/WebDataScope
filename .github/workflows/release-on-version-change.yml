@@ -31,6 +31,15 @@ jobs:
         VERSION=$(jq -r '.version' manifest.json)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+    - name: Verify extension registration flow
+      run: node --test tests/telemetryService.test.mjs
+
+    - name: Verify Worker security and data model
+      run: node --test telemetry-worker/test/*.test.js
+
+    - name: Verify manifest, Base64 guide, changelog and release notice
+      run: node scripts/verify-release.mjs
+
     - name: Check whether release already exists
       id: release_state
       env:
