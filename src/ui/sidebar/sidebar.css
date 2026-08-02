@@ -546,7 +546,7 @@ button.loading::before {
 
 .favorite-post-pagination {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     gap: 8px;
     margin-top: 10px;
@@ -556,8 +556,9 @@ button.loading::before {
     display: none;
 }
 
-.favorite-post-pagination button:last-child {
-    justify-self: end;
+.favorite-post-pagination button {
+    width: 100%;
+    min-width: 0;
 }
 
 .favorite-post-pagination span {
@@ -565,6 +566,7 @@ button.loading::before {
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     text-align: center;
+    white-space: nowrap;
 }
 
 .favorite-post-card {
