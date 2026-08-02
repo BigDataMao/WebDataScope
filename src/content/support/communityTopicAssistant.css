@@ -249,6 +249,14 @@
     opacity: 0.55;
 }
 
+.posts-list .wqp-topic-title-markers {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 .posts-list .wqp-topic-read-marker,
 .posts-list .wqp-topic-ai-posted-marker {
     display: inline-block;
@@ -260,6 +268,7 @@
 }
 
 .posts-list .wqp-topic-read-marker {
+    margin-left: 0;
     border: 1px solid #cbd5e1;
     background: #f8fafc;
     color: #475569;
@@ -274,7 +283,7 @@
 .posts-list button.wqp-topic-favorite-button {
     display: inline-block;
     min-height: 0;
-    margin-left: 6px;
+    margin-left: 0;
     border: 1px solid #fcd34d;
     border-radius: 999px;
     background: #fffbeb;

@@ -169,6 +169,13 @@
         posts.forEach((post) => {
             if (!post.row || !post.anchor) return;
             const markerHost = post.row.querySelector('.post-overview-item') || post.anchor.parentElement;
+            let titleMarkerHost = post.row.querySelector(`.wqp-topic-title-markers[data-post-id="${post.postId}"]`);
+            if (!titleMarkerHost) {
+                titleMarkerHost = document.createElement('span');
+                titleMarkerHost.className = 'wqp-topic-title-markers';
+                titleMarkerHost.dataset.postId = post.postId;
+                post.anchor.parentElement?.insertBefore(titleMarkerHost, post.anchor);
+            }
             let selector = post.row.querySelector(`.wqp-topic-ai-selector[data-post-id="${post.postId}"]`);
             if (aiEnabled && !selector) {
                 selector = document.createElement('label');
@@ -196,7 +203,6 @@
                 readMarker = document.createElement('span');
                 readMarker.className = 'wqp-topic-read-marker';
                 readMarker.dataset.postId = post.postId;
-                markerHost?.appendChild(readMarker);
             }
             if (readMarker) {
                 readMarker.textContent = '已阅读';
@@ -212,7 +218,6 @@
                 favoriteButton.type = 'button';
                 favoriteButton.className = 'wqp-topic-favorite-button';
                 favoriteButton.dataset.postId = post.postId;
-                markerHost?.appendChild(favoriteButton);
             }
             const favorite = postMarker.favorite === true;
             favoriteButton.classList.toggle('is-favorite', favorite);
@@ -222,6 +227,8 @@
             favoriteButton.title = favorite && postMarker.favoritedAt
                 ? `收藏于 ${formatDateTime(postMarker.favoritedAt)}；点击取消收藏`
                 : favorite ? '点击取消收藏' : '收藏此帖子';
+            titleMarkerHost?.appendChild(favoriteButton);
+            if (readMarker) titleMarkerHost?.appendChild(readMarker);
 
             let marker = post.row.querySelector(`.wqp-topic-ai-posted-marker[data-post-id="${post.postId}"]`);
             if (posted && !marker) {
