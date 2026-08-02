@@ -29,6 +29,10 @@
     resize: none;
 }
 
+#wqp-community-topic-ai.is-dragging {
+    user-select: none;
+}
+
 #wqp-community-topic-ai.is-collapsed .wqp-topic-ai-content,
 #wqp-community-topic-ai.is-collapsed .wqp-topic-ai-head p {
     display: none;
@@ -43,6 +47,13 @@
     padding: 12px 14px;
     border-bottom: 1px solid #e5e7eb;
     background: #f8fafc;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+}
+
+#wqp-community-topic-ai.is-dragging .wqp-topic-ai-head {
+    cursor: grabbing;
 }
 
 #wqp-community-topic-ai .wqp-topic-ai-head strong {

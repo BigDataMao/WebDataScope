@@ -381,6 +381,78 @@
         }
     }
 
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function constrainCardToViewport() {
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const visibleWidth = Math.min(rect.width, window.innerWidth - 16);
+        const visibleHeight = Math.min(rect.height, window.innerHeight - 16);
+        const maxLeft = Math.max(8, window.innerWidth - visibleWidth - 8);
+        const maxTop = Math.max(8, window.innerHeight - visibleHeight - 8);
+        card.style.left = `${clamp(rect.left, 8, maxLeft)}px`;
+        card.style.top = `${clamp(rect.top, 8, maxTop)}px`;
+        card.style.right = 'auto';
+        card.style.bottom = 'auto';
+    }
+
+    function bindCardWindowInteractions() {
+        if (!card || card.dataset.boundWindow === 'true') return;
+        card.dataset.boundWindow = 'true';
+        let dragState = null;
+
+        card.addEventListener('pointerdown', (event) => {
+            const handle = event.target?.closest?.('.wqp-topic-ai-head');
+            if (!handle || event.target.closest('button, input, textarea, select, a, summary')) return;
+            if (event.isPrimary === false) return;
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+            const rect = card.getBoundingClientRect();
+            dragState = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                left: rect.left,
+                top: rect.top,
+                width: rect.width,
+                height: rect.height,
+            };
+            card.setPointerCapture?.(event.pointerId);
+            card.classList.add('is-dragging');
+            event.preventDefault();
+        });
+
+        card.addEventListener('pointermove', (event) => {
+            if (!dragState || event.pointerId !== dragState.pointerId) return;
+            const nextLeft = dragState.left + event.clientX - dragState.startX;
+            const nextTop = dragState.top + event.clientY - dragState.startY;
+            const maxLeft = Math.max(8, window.innerWidth - dragState.width - 8);
+            const maxTop = Math.max(8, window.innerHeight - dragState.height - 8);
+            card.style.left = `${clamp(nextLeft, 8, maxLeft)}px`;
+            card.style.top = `${clamp(nextTop, 8, maxTop)}px`;
+            card.style.right = 'auto';
+            card.style.bottom = 'auto';
+        });
+
+        const stopDragging = (event) => {
+            if (!dragState || (event?.pointerId != null && event.pointerId !== dragState.pointerId)) return;
+            const pointerId = dragState.pointerId;
+            dragState = null;
+            card.releasePointerCapture?.(pointerId);
+            card.classList.remove('is-dragging');
+            constrainCardToViewport();
+        };
+        card.addEventListener('pointerup', stopDragging);
+        card.addEventListener('pointercancel', stopDragging);
+        window.addEventListener('resize', constrainCardToViewport);
+        if (typeof ResizeObserver === 'function') {
+            const resizeObserver = new ResizeObserver(() => constrainCardToViewport());
+            resizeObserver.observe(card);
+        }
+    }
+
     function ensureCard() {
         if (card) return card;
         if (!document.body) return null;
@@ -402,6 +474,8 @@
         card.addEventListener('input', handleCardInput);
         card.addEventListener('change', handleCardChange);
         document.body.appendChild(card);
+        bindCardWindowInteractions();
+        constrainCardToViewport();
         return card;
     }
 
@@ -413,6 +487,7 @@
             button.textContent = collapsed ? '展开' : '收起';
             button.setAttribute('aria-label', collapsed ? '展开 AI 论坛批量助手' : '收起 AI 论坛批量助手');
         }
+        constrainCardToViewport();
     }
 
     function statusLabel(result) {
@@ -505,6 +580,7 @@
         `;
         updateSelectionCount();
         renderResults();
+        constrainCardToViewport();
     }
 
     function setRunning(nextRunning) {
