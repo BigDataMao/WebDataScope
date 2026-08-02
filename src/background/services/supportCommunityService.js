@@ -1238,6 +1238,44 @@ export async function getCachedCommunityAiSummary(payload = {}) {
     };
 }
 
+export async function getCommunityAiPostStatuses(payload = {}) {
+    const refs = Array.isArray(payload.postIds) ? payload.postIds : [];
+    const postIds = Array.from(new Set(refs
+        .map((ref) => {
+            try {
+                return parseApiId(ref, 'posts', 'postId');
+            } catch (_) {
+                return '';
+            }
+        })
+        .filter(Boolean)))
+        .slice(0, 100);
+    const state = await getCommunityState();
+    const aiByPost = state.aiByPost && typeof state.aiByPost === 'object' ? state.aiByPost : {};
+    const byPost = {};
+
+    postIds.forEach((postId) => {
+        const entry = aiByPost[postId] && typeof aiByPost[postId] === 'object'
+            ? aiByPost[postId]
+            : {};
+        const posted = entry.lastPostedComment;
+        byPost[postId] = {
+            postId,
+            hasSummary: Boolean(entry.summary?.summaryMarkdown),
+            hasDraft: Boolean(entry.draft?.draft?.commentMarkdown || entry.draft?.draft?.commentText),
+            lastPostedComment: posted ? {
+                postedAt: posted.postedAt || '',
+                comment: {
+                    id: posted.comment?.id || '',
+                    url: posted.comment?.url || '',
+                },
+            } : null,
+        };
+    });
+
+    return { byPost };
+}
+
 export async function summarizeCommunityPostWithAi(payload = {}, ctx = {}) {
     progress(ctx, '正在获取帖子和评论以生成 AI 总结…');
     const context = await buildCommunityAiContext(payload, ctx);
@@ -2299,6 +2337,8 @@ export async function runCommunityAction(action, payload = {}, ctx = {}) {
             return summarizeCommunityPostWithAi(payload, ctx);
         case 'AI_GET_CACHED_SUMMARY':
             return getCachedCommunityAiSummary(payload);
+        case 'AI_GET_POST_STATUSES':
+            return getCommunityAiPostStatuses(payload);
         case 'AI_DRAFT_COMMENT':
             return draftCommunityPostCommentWithAi(payload, ctx);
         case 'AI_POST_COMMENT':

@@ -1,4 +1,5 @@
 ﻿import { createCommunityPort } from './runtimeClient.js';
+import { loadSidebarLibraries } from './sidebarLibraries.js';
 import { downloadBytes, formatNow, setStatus } from './ui.js';
 
 let communityPort = null;
@@ -459,6 +460,7 @@ async function exportCommunity(compressed) {
     const state = await getCommunityStateFromStorage();
     if (!state) throw new Error('没有可导出的社区数据。');
     if (compressed) {
+        await loadSidebarLibraries();
         downloadBytes(`WQP_CommunityState_${formatNow()}.wqcs`, createCompressedCommunityStateBlob(state));
     } else {
         downloadBytes(`WQP_CommunityState_${formatNow()}.json`, createCommunityStateJsonBlob(state), 'application/json;charset=utf-8');
@@ -467,6 +469,7 @@ async function exportCommunity(compressed) {
 
 async function importCommunity(file) {
     const compressed = /\.wqcs$/i.test(file.name);
+    if (compressed) await loadSidebarLibraries();
     const data = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = () => reject(new Error('读取文件失败。'));

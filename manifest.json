@@ -101,6 +101,18 @@
                 "src/content/support/communityAssistant.css"
             ],
             "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://support.worldquantbrain.com/hc/*/community/topics/*"
+            ],
+            "js": [
+                "src/content/support/communityTopicAssistant.js"
+            ],
+            "css": [
+                "src/content/support/communityTopicAssistant.css"
+            ],
+            "run_at": "document_idle"
         }
     ],
     "web_accessible_resources": [

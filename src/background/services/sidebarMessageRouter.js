@@ -1,13 +1,4 @@
-﻿import { getLocalValue, setLocalValue } from './storageService.js';
-import { getSettings, saveSettings } from './settingsService.js';
-import { runCommunityAction } from './supportCommunityService.js';
-import { generateAlphaDescriptionWithAi } from './alphaDescriptionService.js';
-import {
-    clearProdMemoCache,
-    deleteProdMemoCache,
-    getProdMemoCache,
-    importProdMemoCache,
-} from './prodMemoService.js';
+﻿import { getSettings, saveSettings } from './settingsService.js';
 import {
     clearSessionKeeperLogs,
     getSessionKeeperState,
@@ -16,6 +7,16 @@ import {
     saveSessionKeeperConfig,
     triggerAutoLogin,
 } from './sessionKeeperService.js';
+
+function runCommunityAction(action, payload, ctx) {
+    return import('./supportCommunityService.js')
+        .then((service) => service.runCommunityAction(action, payload, ctx));
+}
+
+function runProdMemo(method, ...args) {
+    return import('./prodMemoService.js')
+        .then((service) => service[method](...args));
+}
 
 function respond(sendResponse, promise) {
     promise
@@ -52,25 +53,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return respond(sendResponse, handleCapturedSessionToken(msg.token));
     }
     if (msg.type === 'WQP_PRODMEMO_GET' || msg.type === 'WQP_PRODMEMO_EXPORT') {
-        return respond(sendResponse, getProdMemoCache());
+        return respond(sendResponse, runProdMemo('getProdMemoCache'));
     }
     if (msg.type === 'WQP_PRODMEMO_IMPORT') {
-        return respond(sendResponse, importProdMemoCache(msg.memoData));
+        return respond(sendResponse, runProdMemo('importProdMemoCache', msg.memoData));
     }
     if (msg.type === 'WQP_PRODMEMO_CLEAR') {
-        return respond(sendResponse, clearProdMemoCache());
+        return respond(sendResponse, runProdMemo('clearProdMemoCache'));
     }
     if (msg.type === 'WQP_PRODMEMO_DELETE') {
-        return respond(sendResponse, deleteProdMemoCache(msg.alphaId));
+        return respond(sendResponse, runProdMemo('deleteProdMemoCache', msg.alphaId));
     }
     if (msg.type === 'WQP_LLM_CONFIG_GET') {
-        return respond(sendResponse, runCommunityAction('LLM_CONFIG_GET'));
+        return respond(sendResponse, import('./llmService.js').then((service) => service.getLlmConfig()));
     }
     if (msg.type === 'WQP_LLM_CONFIG_SAVE') {
-        return respond(sendResponse, runCommunityAction('LLM_CONFIG_SAVE', { config: msg.config }));
+        return respond(sendResponse, import('./llmService.js').then((service) => service.saveLlmConfig(msg.config)));
     }
     if (msg.type === 'WQP_ALPHA_AI_GENERATE_DESCRIPTION') {
-        return respond(sendResponse, generateAlphaDescriptionWithAi({
+        return respond(sendResponse, import('./alphaDescriptionService.js').then((service) => service.generateAlphaDescriptionWithAi({
             alphaId: msg.alphaId,
             alphaType: msg.alphaType,
             expression: msg.expression,
@@ -82,7 +83,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             existingSelectionDescription: msg.existingSelectionDescription,
             existingComboDescription: msg.existingComboDescription,
             selectedAlphaCount: msg.selectedAlphaCount,
-        }));
+        })));
     }
     if (msg.type === 'WQP_COMMUNITY_AI_SUMMARIZE_POST') {
         return respond(sendResponse, runCommunityAction('AI_SUMMARIZE_POST', {
@@ -95,6 +96,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return respond(sendResponse, runCommunityAction('AI_GET_CACHED_SUMMARY', {
             postUrl: msg.postUrl,
             postId: msg.postId,
+        }));
+    }
+    if (msg.type === 'WQP_COMMUNITY_AI_GET_POST_STATUSES') {
+        return respond(sendResponse, runCommunityAction('AI_GET_POST_STATUSES', {
+            postIds: msg.postIds,
         }));
     }
     if (msg.type === 'WQP_COMMUNITY_AI_DRAFT_COMMENT') {

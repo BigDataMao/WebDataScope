@@ -1,15 +1,42 @@
-import { initCommunityPanel } from './modules/communityPanel.js';
-import { initProdMemoPanel } from './modules/prodMemoPanel.js';
 import { initSessionPanel } from './modules/sessionPanel.js';
 import { initSettingsPanel } from './modules/settingsPanel.js';
-import { initEncodedContentPanels } from './modules/encodedContentPanels.js';
-import { bindTabs } from './modules/ui.js';
+import { bindTabs, setStatus } from './modules/ui.js';
+
+const panelInitializers = {
+    prodmemo: async () => {
+        const { initProdMemoPanel } = await import('./modules/prodMemoPanel.js');
+        await initProdMemoPanel();
+    },
+    community: async () => {
+        const { initCommunityPanel } = await import('./modules/communityPanel.js');
+        initCommunityPanel();
+    },
+    help: async () => {
+        const { initEncodedContentPanels } = await import('./modules/encodedContentPanels.js');
+        initEncodedContentPanels();
+    },
+};
+
+const panelInitPromises = new Map();
+
+function initializePanel(key) {
+    if (!panelInitializers[key]) return Promise.resolve();
+    if (panelInitPromises.has(key)) return panelInitPromises.get(key);
+    const promise = panelInitializers[key]().catch((error) => {
+        panelInitPromises.delete(key);
+        setStatus(`${key} 页面加载失败：${error.message}`, 'error');
+        throw error;
+    });
+    panelInitPromises.set(key, promise);
+    return promise;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
-    bindTabs();
-    initEncodedContentPanels();
-    initCommunityPanel();
-    await initSettingsPanel();
-    await initSessionPanel();
-    await initProdMemoPanel();
+    bindTabs((key) => {
+        initializePanel(key).catch(() => {});
+    });
+    await Promise.allSettled([
+        initSettingsPanel(),
+        initSessionPanel(),
+    ]);
 });
