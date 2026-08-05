@@ -12,6 +12,7 @@ const PATHS = {
     vendorCss: 'src/vendor/css',
     sharedContent: 'src/content/shared',
     platformCommon: 'src/content/platform/common',
+    platformAlpha: 'src/content/platform/alpha',
     platformData: 'src/content/platform/data',
     platformDistribution: 'src/content/platform/distribution',
     platformGenius: 'src/content/platform/genius',
@@ -176,6 +177,11 @@ initTelemetryService();
 
 // 监听标签页更新事件
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    const currentUrl = changeInfo.url || tab.url || '';
+    if ((changeInfo.url || changeInfo.status === 'complete') && isAlphaAssistantUrl(currentUrl)) {
+        injectionAlphaDescriptionAssistant(tabId);
+    }
+
     if (changeInfo.status === 'complete' && tab.url) {
         const url = tab.url
 
@@ -207,6 +213,13 @@ chrome.webNavigation.onCommitted.addListener((details) => {
     if (details.frameId !== 0) return;
     if (!details.url || !details.url.includes('platform.worldquantbrain.com')) return;
     injectFetchInterceptor(details.tabId);
+    if (isAlphaAssistantUrl(details.url)) injectionAlphaDescriptionAssistant(details.tabId);
+}, { url: [{ hostContains: 'platform.worldquantbrain.com' }] });
+
+// WorldQuant Platform 是 SPA；仅改变 history 时，Manifest content_scripts 不会重新匹配并注入。
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+    if (details.frameId !== 0 || !isAlphaAssistantUrl(details.url)) return;
+    injectionAlphaDescriptionAssistant(details.tabId);
 }, { url: [{ hostContains: 'platform.worldquantbrain.com' }] });
 
 // 注入 Fetch 拦截器到页面的 MAIN 环境中
@@ -826,6 +839,50 @@ function injectionSimulateScript(tabId) {
     } catch (error) {
         console.error('Script injection failed: ', error);
     }
+}
+
+function isAlphaAssistantUrl(value) {
+    try {
+        const url = new URL(String(value || ''));
+        if (url.hostname !== 'platform.worldquantbrain.com') return false;
+        if (/^\/alphas\/unsubmitted(?:\/|$)/i.test(url.pathname)) return true;
+        if (/^\/simulate(?:\/|$)/i.test(url.pathname)) return true;
+        const alphaPath = url.pathname.match(/^\/alphas?\/([^/]+)/i);
+        const alphaId = String(alphaPath?.[1] || '').toLowerCase();
+        return Boolean(alphaId && !['unsubmitted', 'submitted', 'distribution'].includes(alphaId));
+    } catch (_) {
+        return false;
+    }
+}
+
+const alphaAssistantInjectionTasks = new Map();
+
+function injectionAlphaDescriptionAssistant(tabId) {
+    if (alphaAssistantInjectionTasks.has(tabId)) return alphaAssistantInjectionTasks.get(tabId);
+
+    const task = chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => Boolean(window.__WQP_ALPHA_DESCRIPTION_ASSISTANT__),
+    }).then((results) => {
+        if (results?.[0]?.result) return;
+        return Promise.all([
+            chrome.scripting.insertCSS({
+                target: { tabId },
+                files: [`${PATHS.platformAlpha}/alphaDescriptionAssistant.css`],
+            }),
+            chrome.scripting.executeScript({
+                target: { tabId },
+                files: [`${PATHS.platformAlpha}/alphaDescriptionAssistant.js`],
+            }),
+        ]);
+    }).catch((error) => {
+        console.warn('AI Alpha 描述助手注入失败：', error);
+    }).finally(() => {
+        alphaAssistantInjectionTasks.delete(tabId);
+    });
+
+    alphaAssistantInjectionTasks.set(tabId, task);
+    return task;
 }
 
 function isExcluded(url) {

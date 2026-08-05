@@ -1,5 +1,8 @@
 export const ENCODED_CHANGELOG = [
-    'W3sidmVyc2lvbiI6IjEuMy4xIiwiZGF0ZSI6IjIwMjYtMDgtMDIiLCJpdGVtcyI6WyLnsr7nroDmm7TmlrDml6Xlv5fvvIzlubblnKjkuIvmlrnmlrDlop7o',
+    'W3sidmVyc2lvbiI6IjEuNC4xIiwiZGF0ZSI6IjIwMjYtMDgtMDUiLCJpdGVtcyI6WyLkvJjljJYgQUkg6K6+572u5biD5bGA77yM5bm25pS56L+bIEFJIEFs',
+    'cGhhIOaPj+i/sOWKqeaJi+WcqOacquaPkOS6pOOAgeaooeaLn+WPiuWNlemhtei3s+i9rOWcuuaZr+S4reeahOivhuWIq+S4juazqOWFpeOAgiIsIkdlbml1',
+    'cyDlt6XlhbfmoI/mlrDlop4gV1EgQVBJ77yM5Lya6K6u5YWl5Y+j6LCD5pW05Li6IFdR5pel5Y6G77yM5bm256e76Zmk5pen6YWN572u5oyJ6ZKu44CCIl19',
+    'LHsidmVyc2lvbiI6IjEuMy4xIiwiZGF0ZSI6IjIwMjYtMDgtMDIiLCJpdGVtcyI6WyLnsr7nroDmm7TmlrDml6Xlv5fvvIzlubblnKjkuIvmlrnmlrDlop7o',
     'h7TosKLkuI7lj4vmg4Xpk77mjqXjgIIiLCLkv67lpI0gQUkg6K665Z2b5om56YeP5Yqp5omL5bCa5pyq5Y+R5biD6K+E6K665pe277yM5p+l55yL6K+E6K66',
     '6ZSZ6K+v6Lez6L2s6K665Z2b6aaW6aG155qE6Zeu6aKY44CCIl19LHsidmVyc2lvbiI6IjEuMy4wIiwiZGF0ZSI6IjIwMjYtMDgtMDIiLCJpdGVtcyI6WyLm',
     'lrDlop7niYjmnKznmbvorrDvvJrlronoo4XmiJbljYfnuqflkI7nmbvorrAgV1EgSUTjgIHlm73lrrYv5Zyw5Yy644CB5o+S5Lu254mI5pys5ZKM6ZqP5py6',
