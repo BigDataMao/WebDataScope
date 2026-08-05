@@ -9,7 +9,7 @@ WebDataScope是一个正在打造的Chrome/Edge插件。它可以让你在平台
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&theme=dark&legend=top-left" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://www.star-history.com/?repos=AlphaQuantKit%2FWebDataScope&type=date&logscale=&legend=top-left" />
  </picture>
 </a>
 
