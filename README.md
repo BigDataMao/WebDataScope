@@ -7,18 +7,9 @@ WebDataScope是一个正在打造的Chrome/Edge插件。它可以让你在平台
 
 <a href="https://www.star-history.com/?repos=AlphaQuantKit%2FWebDataScope&type=date&logscale=&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://www.star-history.com/?repos=AlphaQuantKit%2FWebDataScope&type=date&logscale=&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&theme=dark&logscale&legend=top-left&sealed_token=U535bVQ0MW7IuVrK1BMj5ihqv3hvuWRfFAGqN2OTRl7iOa4prnNYNnKf6GeZ3TyQ1g" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&logscale&legend=top-left&sealed_token=U535bVQ0MW7IuVrK1BMj5ihqv3hvuWRfFAGqN2OTRl7iOa4prnNYNnKf6GeZ3TyQ1g" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AlphaQuantKit/WebDataScope&type=date&logscale&legend=top-left&sealed_token=U535bVQ0MW7IuVrK1BMj5ihqv3hvuWRfFAGqN2OTRl7iOa4prnNYNnKf6GeZ3TyQ1g" />
  </picture>
 </a>
-
-<!-- 
-# TODO
-- [ ] **fields的逐年覆盖率** (优先处理)
-- [ ] Genius排名分析的优化, 以增加准确性
-- [ ] BUG: Genius排名分析有时需要刷新一下才能显示数据
-- [ ] 未知功能可以选择起始时间
-- [ ] 运算符分析排除SA
-- [ ] 计算Self Corr -->
 
