@@ -6,7 +6,7 @@
 
     const SEARCH = 'kC.SUBMITTED?[l]:[c],...a?[d]:[],{';
     const VERSION_REGEX = /version:\s*"1\.0\.6"/;
-    const VERSION_REPLACE = 'version:"1.0.6-wqp9"';
+    const VERSION_REPLACE = 'version:"1.0.6-wqp10"';
 
     const EXTRA_COLUMNS = [
         {
@@ -54,34 +54,34 @@
             type: 'string',
         },
         {
+            id: 'maxSelfCorr',
+            name: 'Self Corr',
+            active: false,
+            category: 'WQP',
+            activeTabsWithoutParent: ['unsubmitted', 'submitted'],
+            display: true,
+            type: 'string',
+            width: 115
+        },
+        {
+            id: 'maxPoolProdCorr',
+            name: 'Pool Corr',
+            active: false,
+            category: 'WQP',
+            activeTabsWithoutParent: ['unsubmitted', 'submitted'],
+            display: true,
+            type: 'string',
+            width: 115
+        },
+        {
             id: 'maxProdCorr',
-            name: 'Max Prod Corr',
+            name: 'Prod Corr',
             active: true,
             category: 'WQP',
             activeTabsWithoutParent: ['unsubmitted', 'submitted'],
             display: true,
             type: 'string',
-            width: 100
-        },
-        {
-            id: 'maxPoolProdCorr',
-            name: 'Max Pool Corr',
-            active: false,
-            category: 'WQP',
-            activeTabsWithoutParent: ['unsubmitted', 'submitted'],
-            display: true,
-            type: 'string',
-            width: 80
-        },
-        {
-            id: 'maxSelfCorr',
-            name: 'Max Self Corr',
-            active: false,
-            category: 'WQP',
-            activeTabsWithoutParent: ['unsubmitted', 'submitted'],
-            display: true,
-            type: 'string',
-            width: 80
+            width: 115
         },
         {
             id: 'operatorCount',

@@ -127,19 +127,23 @@
         </section>
 
         <section id="prodMemoPanel" class="panel" data-panel="prodmemo">
-            <div class="section-title">ProdMemo 缓存</div>
+            <div class="section-title">ProdMemo 本地相关性</div>
             <div id="prodMemoSummary" class="info-box"></div>
             <div class="grid-actions">
-                <button id="refreshProdMemoBtn" type="button">刷新</button>
-                <button id="exportProdMemoBtn" type="button">导出 JSON</button>
-                <button id="importProdMemoBtn" type="button">导入 JSON</button>
-                <button id="clearProdMemoBtn" class="danger" type="button">清空缓存</button>
+                <button id="syncProdMemoBtn" type="button">增量同步 Alpha + PnL</button>
+                <button id="refreshProdMemoBtn" type="button">刷新状态</button>
+            </div>
+            <div class="grid-actions">
+                <button id="exportProdMemoBtn" type="button">导出 Corr JSON</button>
+                <button id="importProdMemoBtn" type="button">导入 Corr JSON</button>
+                <button id="clearProdMemoBtn" class="danger" type="button">清空 Corr</button>
+                <button id="clearProdMemoSyncBtn" class="danger" type="button">清空同步数据</button>
                 <input id="importProdMemoFile" type="file" accept="application/json,.json" hidden>
             </div>
 
             <div id="prodMemoStatus" class="info-box" aria-live="polite"></div>
 
-            <div class="section-title">缓存列表</div>
+            <div class="section-title">Platform / Local Corr</div>
             <label class="field">
                 <span>Alpha ID 搜索</span>
                 <input id="prodMemoSearch" type="search" placeholder="输入 Alpha ID">

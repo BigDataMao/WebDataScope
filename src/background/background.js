@@ -290,24 +290,28 @@ function injectFetchInterceptor(tabId) {
                     }
                 }
 
-                function formatMemoValue(value) {
-                    const numeric = Number(value);
-                    return Number.isFinite(numeric) ? numeric.toFixed(4) : '';
+                function formatMemoValue(metric) {
+                    if (typeof metric?.display === 'string') return metric.display;
+                    const numeric = Number(metric?.max);
+                    if (!Number.isFinite(numeric)) return '';
+                    const prefix = metric?.lowerBound ? '≥' : '';
+                    const icon = metric?.source === 'local' ? 'Ⓛ' : 'Ⓟ';
+                    return `${prefix}${numeric.toFixed(4)} ${icon}`;
                 }
 
                 function getMaxProdCorr(cache, alphaId) {
                     const memo = cache?.[alphaId];
-                    return formatMemoValue(memo?.prod?.max);
+                    return formatMemoValue(memo?.prod);
                 }
 
                 function getMaxPoolProdCorr(cache, alphaId) {
                     const memo = cache?.[alphaId];
-                    return formatMemoValue(memo?.pool?.max);
+                    return formatMemoValue(memo?.pool);
                 }
 
                 function getMaxSelfCorr(cache, alphaId) {
                     const memo = cache?.[alphaId];
-                    return formatMemoValue(memo?.self?.max);
+                    return formatMemoValue(memo?.self);
                 }
 
                 // 1. 定义需要校验的RA检查项名称（自动去重，避免重复统计）
@@ -382,34 +386,6 @@ function injectFetchInterceptor(tabId) {
 
                 // 执行原始请求
                 const response = await originalFetch.apply(this, args);
-
-                if (url && url.includes('/alphas/') && url.includes('/correlations/')) {
-                    try {
-                        const match = url.match(/\/alphas\/([^/]+)\/correlations\/([^/?#]+)/);
-                        if (match) {
-                            response.clone().json().then(data => {
-                                window.postMessage({
-                                    type: 'WQP_PRODMEMO_CORRELATION_DATA',
-                                    alphaId: match[1],
-                                    subType: match[2],
-                                    data,
-                                }, '*');
-                            }).catch(() => {});
-                        }
-                    } catch (e) {
-                        console.warn('[WQP] ProdMemo correlation capture failed:', e);
-                    }
-                }
-
-                if (url && url.includes('/alphas/') && url.includes('/recordsets')) {
-                    const match = url.match(/\/alphas\/([^/]+)\/recordsets/);
-                    if (match) {
-                        window.postMessage({
-                            type: 'WQP_PRODMEMO_ALPHA_VIEW',
-                            alphaId: match[1],
-                        }, '*');
-                    }
-                }
 
                 // 拦截并修改目标接口的响应
                 if (url && url.includes("https://api.worldquantbrain.com/users/self/alphas?")) {
@@ -710,7 +686,6 @@ function injectionDistributionScript(tabId) {
         chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: [
-                `${PATHS.vendorJs}/chart.js`,
                 `${PATHS.sharedContent}/utils.js`,
                 `${PATHS.platformDistribution}/distribution.js`,
             ],
