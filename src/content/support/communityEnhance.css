@@ -75,7 +75,8 @@ html body .wqp-ce-code * {
 .community-badge-title[data-wqp-ce="staff"] { background: #1d4ed8 !important; color: #fff !important; }
 .community-badge-title[data-wqp-ce="consultant"] { background: #0f766e !important; color: #fff !important; }
 
-.wqp-ce-followed-post {
+.striped-list-item.wqp-ce-followed-post,
+.posts-list li.wqp-ce-followed-post {
     background: rgba(201, 162, 39, 0.07) !important;
 }
 

@@ -208,7 +208,9 @@ if (!window.__WQP_COMMUNITY_ENHANCE__) {
             ensureFollowButton(el, id);
             if (!followed.has(id.toLowerCase())) return;
             el.classList.add('wqp-ce-followed-author');
-            if (row && row !== el) row.classList.add('wqp-ce-followed-post');
+            if (row && row.matches('.striped-list-item, .posts-list li')) {
+                row.classList.add('wqp-ce-followed-post');
+            }
         });
     }
 
