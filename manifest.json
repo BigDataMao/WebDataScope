@@ -98,6 +98,28 @@
         },
         {
             "matches": [
+                "https://support.worldquantbrain.com/hc/*/community/*"
+            ],
+            "js": [
+                "src/vendor/js/highlight.min.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "https://support.worldquantbrain.com/hc/*/community/*"
+            ],
+            "js": [
+                "src/content/support/communityEnhance.js"
+            ],
+            "css": [
+                "src/content/support/communityEnhance.css"
+            ],
+            "type": "module",
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
                 "https://support.worldquantbrain.com/hc/*/community/posts/*"
             ],
             "js": [
