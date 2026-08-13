@@ -14,10 +14,35 @@
         url("https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2") format("woff2");
 }
 
-html,
-body,
-h1, h2, h3, h4, h5, h6 {
+html {
+    --heading-font: var(--wqp-ce-sans) !important;
+    --text-font: var(--wqp-ce-sans) !important;
     font-family: var(--wqp-ce-sans) !important;
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+.post,
+.post-content,
+.post-body,
+.post-info,
+.comment,
+.comment-body,
+.article-body,
+.striped-list-title,
+.striped-list-info,
+.meta-group,
+.meta-data {
+    font-family: var(--wqp-ce-sans) !important;
+    letter-spacing: normal !important;
+}
+
+.post-content *:not(i):not(code):not(kbd):not(samp):not(pre):not(tt):not([class*="icon"]):not([class^="hljs"]),
+.post-body *:not(i):not(code):not(kbd):not(samp):not(pre):not(tt):not([class*="icon"]):not([class^="hljs"]),
+.comment-body *:not(i):not(code):not(kbd):not(samp):not(pre):not(tt):not([class*="icon"]):not([class^="hljs"]),
+.article-body *:not(i):not(code):not(kbd):not(samp):not(pre):not(tt):not([class*="icon"]):not([class^="hljs"]) {
+    font-family: inherit !important;
+    letter-spacing: inherit !important;
 }
 
 html body pre,
