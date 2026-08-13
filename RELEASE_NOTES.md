@@ -1,4 +1,12 @@
-Release version 1.5.0
+Release version 1.5.1
+
+## 修复内容
+
+- 修复 WorldQuant BRAIN 平台脚本更新后，自定义 Alpha 列无法正常注入的问题。
+- 更新平台列定义的匹配特征，以适配最新的平台脚本结构。
+- 将列补丁内部版本升级至 `1.0.6-wqp11`，使已有安装在升级后刷新本地列配置并应用修复。
+
+本版本为 Bug 修复版本。更新扩展并刷新 WorldQuant BRAIN 页面后即可生效。
 
 > [!IMPORTANT]
 > 关于版本的说明：版本号遵循 x.y.z：x 为重大架构变更，y 为功能新增，z 为 Bug 修复。
